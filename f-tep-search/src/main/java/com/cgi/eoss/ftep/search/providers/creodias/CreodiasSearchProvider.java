@@ -73,6 +73,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
             .put("s3ProcessingLevel", "processingLevel")
             .put("landsatProcessingLevel", "processingLevel")
             .put("s1ProductType", "productType")
+			.put("s1Platform", "platform")
             .put("productDateStart", "startDate")
             .put("productDateEnd", "completionDate")
             .put("maxCloudCover", "cloudCover")

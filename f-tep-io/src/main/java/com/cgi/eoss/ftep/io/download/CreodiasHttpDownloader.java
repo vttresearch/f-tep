@@ -98,7 +98,7 @@ public class CreodiasHttpDownloader implements Downloader {
 
         // Ensure an L2A product is ordered if necessary
         HttpUrl downloadUrl;
-        if (uri.getQuery().contains("L2A=true")) {
+        if (uri.getQuery() != null && uri.getQuery().contains("L2A=true")) {
             try {
                 downloadUrl = getDownloadUrl(uri);
             } catch (Exception e) {
