@@ -9,6 +9,8 @@ import com.cgi.eoss.ftep.rpc.GrpcUtil;
 import com.cgi.eoss.ftep.rpc.LocalServiceLauncher;
 import com.cgi.eoss.ftep.rpc.StopServiceParams;
 import com.cgi.eoss.ftep.rpc.StopServiceResponse;
+import com.cgi.eoss.ftep.rpc.CancelJobParams;
+import com.cgi.eoss.ftep.rpc.CancelJobResponse;
 import com.cgi.eoss.ftep.security.FtepSecurityService;
 import com.google.common.collect.ImmutableMap;
 import io.grpc.stub.StreamObserver;
@@ -124,6 +126,41 @@ public class JobsApiExtension {
         @Override
         public void onError(Throwable t) {
             LOG.error("Failed to stop service via REST API", t);
+        }
+
+        @Override
+        public void onCompleted() {
+            // No-op, the user has long stopped listening here
+        }
+    }
+
+    @PostMapping("/{jobId}/cancel")
+    @PreAuthorize("hasAnyRole('CONTENT_AUTHORITY', 'ADMIN') or hasPermission(#job, 'write')")
+    public ResponseEntity cancelJob(@ModelAttribute("jobId") Job job) throws InterruptedException {
+        CancelJobParams cancelJobParams = CancelJobParams.newBuilder().setJob(GrpcUtil.toRpcJob(job)).build();
+        final CountDownLatch latch = new CountDownLatch(1);
+        CancelJobObserver responseObserver = new CancelJobObserver(latch);
+        localServiceLauncher.asyncCancelJob(cancelJobParams, responseObserver);
+        latch.await(1, TimeUnit.MINUTES);
+        return ResponseEntity.noContent().build();
+    }
+
+    private static final class CancelJobObserver implements StreamObserver<CancelJobResponse> {
+        private final CountDownLatch latch;
+
+        CancelJobObserver(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void onNext(CancelJobResponse value) {
+            LOG.debug("Received CancelJobResponse: {}", value);
+            latch.countDown();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            LOG.error("Failed to cancel service via REST API", t);
         }
 
         @Override
