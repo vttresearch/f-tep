@@ -93,10 +93,20 @@ public class SystematicProcessingScheduler {
         HttpUrl requestUrl = new HttpUrl.Builder().scheme("http").host("local").build();
         SearchResults results;
         JobConfig configTemplate = systematicProcessing.getParentJob().getConfig();
+		SystematicProcessing freshSystematicProcessing;
         try {
             do {
                 results = getSearchResultsPage(requestUrl, page, queryParameters);
                 for (Feature feature : results.getFeatures()) {
+					// Check that the systematic processing is still active:
+					// Cancelling the systematic processing while it is processing search results does not affect 
+					// the current instance so a fresh instance has to be retrieved from the persistent storage
+					freshSystematicProcessing = systematicProcessingDataService.getById(systematicProcessing.getId());
+					if (freshSystematicProcessing.getStatus() == Status.COMPLETED) {
+						systematicProcessing.setStatus(Status.COMPLETED);
+						return;
+					}
+					
                     String url = feature.getProperties().get("ftepUrl").toString();
                     Multimap<String, String> inputs = ArrayListMultimap.create();
                     inputs.putAll(configTemplate.getInputs());
@@ -111,6 +121,12 @@ public class SystematicProcessingScheduler {
                     submitJob(configTemplate.getOwner().getName(), configTemplate.getService().getName(), String.valueOf(systematicProcessing.getParentJob().getId()), inputs);
                     Map<String, Object> extraParams = (Map<String, Object>) feature.getProperties().get("extraParams");
                     systematicProcessing.setLastUpdated(ZonedDateTime.parse(extraParams.get("ftepUpdated").toString()).toLocalDateTime().plusSeconds(1));
+
+					// Slow down a bit for safety
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
                 }
                 page++;
             } while (results.getLinks().containsKey("next"));
