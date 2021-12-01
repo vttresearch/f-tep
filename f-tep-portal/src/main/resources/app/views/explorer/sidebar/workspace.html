@@ -74,7 +74,10 @@
                                     {{mode.name}}
                                 </md-option>
                             </md-select>
-                        </div>
+                            <div class="hint" ng-show="true"><b>Standard mode</b> runs the service once with the given input data.
+                            <p>
+                            <b>Systematic mode</b> runs the service periodically with all new satellite images returned by the data query specified when the processing was launched.</div>
+						</div>
                     </md-input-container>
     
     
@@ -86,10 +89,14 @@
                         </div>
                         <div class="col-xs-12">
                             <md-select ng-model="serviceParams.systematicParameter" aria-label="Data input parameter">
-                                <md-option ng-repeat="input in serviceParams.selectedService.serviceDescriptor.dataInputs" ng-value="input.id">
+                                <md-option ng-repeat="input in serviceParams.selectedService.serviceDescriptor.dataInputs | filter:{dataReference: true}" ng-value="input.id">
                                     {{input.title}}
                                 </md-option>
                             </md-select>
+                            <div class="hint" ng-show="true">The service will be run for all satellite images returned by the search parameters defined at the bottom of this pane,
+                            a separate job for each image as the specified data input parameter.
+                            <p>
+                            <b>Please check the number of images the initial search parameters produce before launching the job to avoid creating hundreds of jobs by mistake.</b></div>
                         </div>
                     </md-input-container>
     
