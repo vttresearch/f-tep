@@ -112,14 +112,19 @@ define(['../../../ftepmodules'], function (ftepmodules) {
             $scope.inputsValid = true;
             $scope.inputValidityMap = new Map();
             $scope.launchButtonTooltipText = "Launch";
+			// Reset service run mode
+			$scope.serviceParams.runMode = $scope.runModes.STANDARD.id;
+			delete $scope.serviceParams.systematicParameter;
         });
 
         $scope.onRunModeChange = function() {
             if ($scope.serviceParams.runMode === $scope.runModes.SYSTEMATIC.id) {
                 $scope.serviceParams.systematicParameter = $scope.serviceParams.selectedService ? $scope.serviceParams.selectedService.serviceDescriptor.dataInputs[0].id : null;
+				$scope.launchButtonTooltipText = "Launch systematic processing";
             }
             else {
                 delete $scope.serviceParams.systematicParameter;
+				$scope.launchButtonTooltipText = "Launch";
             }
         }
 
@@ -174,15 +179,21 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                 searchParams.catalogue = 'SATELLITE';
 
                 if (CommonService.coinsDisabled) {
-                    $scope.displayTab($scope.bottomNavTabs.JOBS, false);
-                    SystematicService.launchSystematicProcessing($scope.serviceParams.selectedService, $scope.serviceParams.systematicParameter, iparams, searchParams, $scope.serviceParams.config.label).then(function () {
-                        JobService.refreshJobs('explorer', 'Create');
+                    CommonService.confirm($event, 'Launching a systematic processing job.' +
+                        '\nAre you sure you want to continue?').then(function (confirmed) {
+                        if (confirmed === false) {
+                            return;
+                        }
+                        $scope.displayTab($scope.bottomNavTabs.JOBS, false);
+                        SystematicService.launchSystematicProcessing($scope.serviceParams.selectedService, $scope.serviceParams.systematicParameter, iparams, searchParams, $scope.serviceParams.config.label).then(function () {
+                            JobService.refreshJobs('explorer', 'Create');
+                        });
                     });
                 }
                 else {
                     SystematicService.estimateMonthlyCost($scope.serviceParams.selectedService, $scope.serviceParams.systematicParameter, iparams, searchParams).then(function(estimation) {
                         var currency = ( estimation.estimatedCost === 1 ? 'coin' : 'coins' );
-                        CommonService.confirm($event, 'This job will approximately cost ' + estimation.estimatedCost + ' ' + currency + ' per month.' +
+                        CommonService.confirm($event, 'Launching a systematic processing job. This job will approximately cost ' + estimation.estimatedCost + ' ' + currency + ' per month.' +
                                 '\nAre you sure you want to continue?').then(function (confirmed) {
                             if (confirmed === false) {
                                 return;
