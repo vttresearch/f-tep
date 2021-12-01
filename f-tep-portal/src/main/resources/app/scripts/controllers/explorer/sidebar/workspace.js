@@ -178,6 +178,12 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                 var searchParams = $scope.searchForm.api.getFormData();
                 searchParams.catalogue = 'SATELLITE';
 
+                if ((searchParams.aoi === undefined || searchParams.aoi === '') &&
+                    searchParams.identifier === undefined || searchParams.identifier === '') {
+                    CommonService.infoBulletin($event, 'Either AOI or Identifier must be given for systematic processings.');
+                    return;
+                }
+
                 if (CommonService.coinsDisabled) {
                     CommonService.confirm($event, 'Launching a systematic processing job.' +
                         '\nAre you sure you want to continue?').then(function (confirmed) {
