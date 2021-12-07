@@ -59,8 +59,8 @@ public class IoConfigurationProperties {
             private String authEndpoint = "https://auth.creodias.eu/auth/realms/DIAS/protocol/openid-connect/token";
             private String authClientId = "CLOUDFERRO_PUBLIC";
             private int overallPriority = 0;
-            private int downloadTimeout = 120;
-            private int searchTimeout = 120;
+            private int downloadTimeout = 180;
+            private int searchTimeout = 180;
         }
     }
 }
