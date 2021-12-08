@@ -209,7 +209,12 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                 }
 
                 if (CommonService.coinsDisabled) {
-                    CommonService.confirm($event, 'Launching a systematic processing job.' +
+                    CommonService.confirm($event, 'Launching a systematic processing job.\n' +
+						'At first a separate job will be launched for each image resulting from the ' +
+						'specified data query which may result in a large number of jobs.\n' + 
+						'After that the query is run periodically and a new job is launched ' +
+						'for each new image until the systematic processing is terminated ' +
+						'in the Manage/Share tab / Systematic processing option from the button pane on the left.' +
                         '\nAre you sure you want to continue?').then(function (confirmed) {
                         if (confirmed === false) {
                             return;
