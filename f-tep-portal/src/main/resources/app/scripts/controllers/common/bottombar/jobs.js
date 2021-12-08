@@ -54,7 +54,7 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                     parallelParameters: config.parallelParameters,
                     searchParameters: config.searchParameters
                 };
-                $rootScope.$broadcast('update.selectedService', repeatConfig, true);
+                $rootScope.$broadcast('update.selectedService', repeatConfig);
             });
         };
 
