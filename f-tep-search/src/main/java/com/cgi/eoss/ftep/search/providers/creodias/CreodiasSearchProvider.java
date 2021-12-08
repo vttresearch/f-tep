@@ -294,13 +294,18 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
 
     private Optional<String> getL2AProductIdentifier(String productIdentifier) {
         // Beginning of the corresponding L2A product identifier name
+        // Change processing level and remove processing time
         String substringForL2A = productIdentifier.substring(0, 44).replaceFirst("L1C", "L2A");
+        // Change processing baseline
+        substringForL2A = substringForL2A.substring(0, 28) + "\\d\\d\\d\\d" + substringForL2A.substring(32);
+        // Add string start and end to pattern
+        substringForL2A = "^" + substringForL2A + ".*";
 
         // List files in the corresponding L2A folder in /eodata and check if one starting with substringForL2A exists
         File dir = new File(getL2ADirectoryName(productIdentifier));
         if (dir.exists() && dir.isDirectory()) {
             for (File file : dir.listFiles()) {
-                if (file.getName().startsWith(substringForL2A)) {
+                if (file.getName().matches(substringForL2A)) {
                     return Optional.of(file.getName().replace(".SAFE", ""));
                 }
             }

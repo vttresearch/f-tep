@@ -190,7 +190,11 @@ public class CreodiasHttpDownloader implements Downloader {
         // Trim the leading slash from the path and get the search URL
         String productId = uri.getPath().substring(1);
         if (uri.getQuery() != null && uri.getQuery().contains("L2A=true")) {
+            // URI is of the format S2A_MSIL1C_20190918T114351_N0208_R123_T29UNV_20190918T183519?L2A=true
+            // Change processing level and remove processing time
             productId = productId.replaceFirst("L1C", "L2A").substring(0, 44);
+            // Change processing baseline
+            productId = productId.substring(0, 28) + "%" + productId.substring(32);
         }
         return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
                 .addPathSegments("api/collections")
