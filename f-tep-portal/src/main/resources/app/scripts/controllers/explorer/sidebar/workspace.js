@@ -98,14 +98,42 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         }
 
         // Update service config values on new service selection
-        $scope.$on('update.selectedService', function(event, config, advancedMode, systematicParameter) {
+        $scope.$on('update.selectedService', function(event, config) {
             ProductService.getService(config.service).then(function(detailedService){
+				var advancedMode = false;
+				if (config.inputs && detailedService.easyModeServiceDescriptor.dataInputs) {
+					// Change to advanced mode if any of the inputs is not in the easy mode inputs
+					for (var key in config.inputs) {
+						var found = false;
+						for (var i = 0; i < detailedService.easyModeServiceDescriptor.dataInputs.length; i++) {
+							if (detailedService.easyModeServiceDescriptor.dataInputs[i].id === key) {
+								found = true;
+								break;
+							}
+						}
+						if (!found) {
+							advancedMode = true;
+							break;
+						}
+					}
+				}
+				// Check whether the service has a parameter that can be used in systematic processing
+				var systematicPossible = false;
+				if (detailedService.serviceDescriptor && detailedService.serviceDescriptor.dataInputs) {
+					for (var i = 0; i < detailedService.serviceDescriptor.dataInputs.length; i++) {
+						if (detailedService.serviceDescriptor.dataInputs[i].searchParameter) {
+							systematicPossible = true;
+							break;
+						}
+					}
+				}
                 $scope.serviceParams.selectedService = detailedService;
                 $scope.serviceParams.config = {
                     inputValues: config.inputs ? config.inputs : {},
                     label: config.label,
                     parallelParameters: getParallelParams(config.parallelParameters),
-                    advancedMode: advancedMode
+                    advancedMode: advancedMode,
+					systematicPossible: systematicPossible
                 };
             });
             // Reset input validation data
@@ -149,19 +177,6 @@ define(['../../../ftepmodules'], function (ftepmodules) {
 
             // If easy mode doesn't exist run advanced mode
             if (!$scope.serviceParams.selectedService.easyModeServiceDescriptor || !$scope.serviceParams.selectedService.easyModeServiceDescriptor.dataInputs) {
-                $scope.serviceParams.config.advancedMode = true;
-            }
-
-            if (!$scope.serviceParams.config.advancedMode) {
-                jobParams = ProductService.generateEasyJobConfig(
-                    $scope.serviceParams.config.inputValues,
-                    $scope.serviceParams.selectedService.easyModeParameterTemplate,
-                    $scope.serviceParams.selectedService._links.self.href,
-                    $scope.serviceParams.config.label,
-                    $scope.serviceParams.config.parallelParameters,
-                    false
-                );
-            } else {
                 jobParams = {
                     'service': $scope.serviceParams.selectedService._links.self.href,
                     'label' : $scope.serviceParams.config.label,
@@ -170,6 +185,15 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                     'systematicParameter' : null,
                     'searchParameters' : [ ]
                 };
+            } else {
+                jobParams = ProductService.generateEasyJobConfig(
+                    $scope.serviceParams.config.inputValues,
+                    $scope.serviceParams.selectedService.easyModeParameterTemplate,
+                    $scope.serviceParams.selectedService._links.self.href,
+                    $scope.serviceParams.config.label,
+                    $scope.serviceParams.config.parallelParameters,
+                    false
+                );
             }
 
             if ($scope.serviceParams.runMode === $scope.runModes.SYSTEMATIC.id) {
@@ -185,7 +209,12 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                 }
 
                 if (CommonService.coinsDisabled) {
-                    CommonService.confirm($event, 'Launching a systematic processing job.' +
+                    CommonService.confirm($event, 'Launching a systematic processing job.\n' +
+						'At first a separate job will be launched for each image resulting from the ' +
+						'specified data query which may result in a large number of jobs.\n' + 
+						'After that the query is run periodically and a new job is launched ' +
+						'for each new image until the systematic processing is terminated ' +
+						'in the Manage/Share tab / Systematic processing option from the button pane on the left.' +
                         '\nAre you sure you want to continue?').then(function (confirmed) {
                         if (confirmed === false) {
                             return;

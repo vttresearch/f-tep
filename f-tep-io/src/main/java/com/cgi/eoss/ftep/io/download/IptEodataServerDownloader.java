@@ -118,10 +118,10 @@ public class IptEodataServerDownloader implements Downloader {
 
     private HttpUrl getDownloadUrl(URI uri) throws IOException {
         // Trim the leading slash from the path and get the search URL
-        String productId = uri.getPath().substring(1);
+        //String productId = uri.getPath().substring(1);
 
         List<HttpUrl> searchUrls = PROTOCOL_COLLECTIONS.get(uri.getScheme()).stream()
-                .map(collection -> buildSearchUrl(collection, productId))
+                .map(collection -> buildSearchUrl(collection, uri))
                 .collect(Collectors.toList());
 
         for (HttpUrl searchUrl : searchUrls) {
@@ -164,7 +164,17 @@ public class IptEodataServerDownloader implements Downloader {
         }
     }
 
-    private HttpUrl buildSearchUrl(String collection, String productId) {
+    private HttpUrl buildSearchUrl(String collection, URI uri) {
+        // Trim the leading slash from the path and get the search URL
+        String productId = uri.getPath().substring(1);
+        if (uri.getQuery() != null && uri.getQuery().contains("L2A=true")) {
+            // URI is of the format S2A_MSIL1C_20190918T114351_N0208_R123_T29UNV_20190918T183519?L2A=true
+            // Change processing level and remove processing time
+            productId = productId.replaceFirst("L1C", "L2A").substring(0, 44);
+            // Change processing baseline
+            productId = productId.substring(0, 28) + "%" + productId.substring(32);
+        }
+
         return HttpUrl.parse(properties.getIptSearchUrl()).newBuilder()
                 .addPathSegments("api/collections")
                 .addPathSegment(collection)
