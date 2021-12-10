@@ -176,7 +176,9 @@ define(['../../../ftepmodules'], function (ftepmodules) {
             var jobParams = null;
 
             // If easy mode doesn't exist run advanced mode
-            if (!$scope.serviceParams.selectedService.easyModeServiceDescriptor || !$scope.serviceParams.selectedService.easyModeServiceDescriptor.dataInputs) {
+            if ($scope.serviceParams.config.advancedMode 
+					|| !$scope.serviceParams.selectedService.easyModeServiceDescriptor 
+					|| !$scope.serviceParams.selectedService.easyModeServiceDescriptor.dataInputs) {
                 jobParams = {
                     'service': $scope.serviceParams.selectedService._links.self.href,
                     'label' : $scope.serviceParams.config.label,
