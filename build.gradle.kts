@@ -68,6 +68,7 @@ allprojects {
     extra.set("jimfs.version", "1.1")
     extra.set("jool.version", "0.9.14")
     extra.set("logf42-gelf.version", "1.3.1")
+	extra.set("log4j2.version", "2.15.0")
     extra.set("lombok.version", "1.18.8")
     extra.set("mockftpserver.version", "2.7.1")
     extra.set("okhttp3.version", "3.14.2")
