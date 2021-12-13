@@ -28,6 +28,11 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 /**
  * <p>Downloader for accessing data from <a href="https://finder.eocloud.eu">EO Cloud</a>. Uses IPT's token
@@ -195,6 +200,36 @@ public class CreodiasHttpDownloader implements Downloader {
             productId = productId.replaceFirst("L1C", "L2A").substring(0, 44);
             // Change processing baseline
             productId = productId.substring(0, 28) + "%" + productId.substring(32);
+        }
+        if (collection.equals("Sentinel2")) {
+            // Limit the query by time to make it faster
+            String productDate = productId.substring(11, 19);
+            SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMdd");
+            sdfIn.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat sdfOut = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+            sdfOut.setTimeZone(TimeZone.getTimeZone("UTC"));
+            try {
+                Date d = sdfIn.parse(productDate);
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(d);
+                cal.add(Calendar.DAY_OF_MONTH, 1);
+
+                String startDate = sdfOut.format(d);
+                String completionDate = sdfOut.format(cal.getTime());
+
+                return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
+                        .addPathSegments("api/collections")
+                        .addPathSegment(collection)
+                        .addPathSegment("search.json")
+                        .addQueryParameter("maxRecords", "1")
+                        .addQueryParameter("productIdentifier", "%" + productId + "%")
+                        .addQueryParameter("status", "all")
+                        .addQueryParameter("startDate", startDate)
+                        .addQueryParameter("completionDate", completionDate)
+                        .build();
+            } catch (ParseException pe) {
+                LOG.error("Failed to parse date from: {}", productDate);
+            }
         }
         return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
                 .addPathSegments("api/collections")
