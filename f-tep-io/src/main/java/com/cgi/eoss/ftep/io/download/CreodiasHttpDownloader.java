@@ -207,24 +207,28 @@ public class CreodiasHttpDownloader implements Downloader {
             sdfIn.setTimeZone(TimeZone.getTimeZone("UTC"));
             SimpleDateFormat sdfOut = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             sdfOut.setTimeZone(TimeZone.getTimeZone("UTC"));
-            Date d = sdfIn.parse(productDate);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(d);
-            cal.add(Calendar.DAY_OF_MONTH, 1);
+            try {
+                Date d = sdfIn.parse(productDate);
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(d);
+                cal.add(Calendar.DAY_OF_MONTH, 1);
 
-            String startDate = sdfOut.format(d);
-            String completionDate = sdfOut.format(cal.getTime());
+                String startDate = sdfOut.format(d);
+                String completionDate = sdfOut.format(cal.getTime());
 
-            return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
-                    .addPathSegments("api/collections")
-                    .addPathSegment(collection)
-                    .addPathSegment("search.json")
-                    .addQueryParameter("maxRecords", "1")
-                    .addQueryParameter("productIdentifier", "%" + productId + "%")
-                    .addQueryParameter("status", "all")
-                    .addQueryParameter("startDate", startDate)
-                    .addQueryParameter("completionDate", completionDate)
-                    .build();
+                return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
+                        .addPathSegments("api/collections")
+                        .addPathSegment(collection)
+                        .addPathSegment("search.json")
+                        .addQueryParameter("maxRecords", "1")
+                        .addQueryParameter("productIdentifier", "%" + productId + "%")
+                        .addQueryParameter("status", "all")
+                        .addQueryParameter("startDate", startDate)
+                        .addQueryParameter("completionDate", completionDate)
+                        .build();
+            } catch (ParseException pe) {
+                LOG.error("Failed to parse date from: {}", productDate);
+            }
         }
         return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
                 .addPathSegments("api/collections")
