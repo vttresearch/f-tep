@@ -5,6 +5,7 @@ import com.cgi.eoss.ftep.model.JobConfig;
 import com.cgi.eoss.ftep.model.Subscription;
 import com.cgi.eoss.ftep.model.SystematicProcessing;
 import com.cgi.eoss.ftep.model.User;
+import com.cgi.eoss.ftep.model.Role;
 import com.cgi.eoss.ftep.persistence.dao.JobConfigDao;
 import com.cgi.eoss.ftep.persistence.dao.JobDao;
 import com.cgi.eoss.ftep.persistence.dao.SystematicProcessingDao;
@@ -215,13 +216,17 @@ public class JobConfigsApiExtension {
 
     private boolean exceedsQuotas(User user) {
         // Find the first active subscription.
-        // TODO: What if several subscriptions are active? What if no subscription exists (ADMINs)?
+        // TODO: What if several subscriptions are active? 
+	// ADMIN users have no restrictions
+	if (user != null && user.getRole() != null && user.getRole() == Role.ADMIN) {
+		return false;
+	}
         LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
         Optional<Subscription> activeSubscription = subscriptionDataService.findByOwner(user).stream()
                 .filter(subscription -> subscription.isActive(currentTime)).findFirst();
         if (activeSubscription.isPresent()) {
             return activeSubscription.get().exceedsProcessingQuota() || activeSubscription.get().exceedsStorageQuota();
         }
-        return false;
+        return true;
     }
 }
