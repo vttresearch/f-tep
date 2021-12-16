@@ -23,18 +23,18 @@ define(['../ftepmodules'], function (ftepmodules) {
         $scope.$on('active.user', function(event, user) {
             if ($scope.activeUser.id && user.id) {
                 if ($scope.activeUser.id != user.id) {
-        	    $scope.activeUser = user;
+                    $scope.activeUser = user;
                     // User changed, check for subscription
                     $scope.checkActiveSubscription();
                 }
             } else if ($scope.activeUser.id || user.id) {
-	        $scope.activeUser = user;
+                $scope.activeUser = user;
                 // User logged in, check for subscription
                 $scope.checkActiveSubscription();
             } else {
-		$scope.activeUser = {};
-		$scope.subscribed = false;
-	    }
+                $scope.activeUser = {};
+                $scope.subscribed = false;
+            }
         });
 
         $scope.hideTimeout = function() {
@@ -47,21 +47,31 @@ define(['../ftepmodules'], function (ftepmodules) {
         };
 
         $scope.checkActiveSubscription = function() {
-	    // Administrators do not need a subscription
-	    if ($scope.activeUser.role === "ADMIN") {
-		$scope.subscribed = true;
-	    } else {
-                UserService.getActiveSubscription().then(function(subscription) {
-	 	    $scope.subscribed = true;
-                }, function(error) {
-		    $scope.subscribed = false;
-	        });
-	    }
+            // Administrators do not need a subscription
+            if ($scope.activeUser.role === "ADMIN") {
+                $scope.subscribed = true;
+            } else {
+                UserService.getActiveSubscription().then(
+                    function(subscription) {
+                        $scope.subscribed = true;
+                    }, function(error) {
+                        $scope.subscribed = false;
+                });
+            }
         }
 
         $scope.startTrial = function() {
             UserService.startTrial().then(function() {
-                $scope.subscribed = true;
+                    $scope.subscribed = true;
+                }, function(error) {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title('Failed to start Trial')
+                        .textContent('A subcription history exists')
+                        .ariaLabel('Failed to start Trial')
+                        .ok('OK')
+                    );
             });
         };
 
