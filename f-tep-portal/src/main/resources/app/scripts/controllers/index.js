@@ -8,7 +8,7 @@
 define(['../ftepmodules'], function (ftepmodules) {
     'use strict';
 
-    ftepmodules.controller('IndexCtrl', ['ftepProperties', '$scope', '$location', '$window', 'UserService', function (ftepProperties, $scope, $location, $window, UserService) {
+    ftepmodules.controller('IndexCtrl', ['ftepProperties', '$scope', '$location', '$window', 'UserService', '$mdDialog', function (ftepProperties, $scope, $location, $window, UserService, $mdDialog) {
 
         $scope.ftepUrl = ftepProperties.FTEP_URL;
         $scope.sessionEnded = false;
