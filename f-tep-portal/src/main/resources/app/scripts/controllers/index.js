@@ -68,7 +68,7 @@ define(['../ftepmodules'], function (ftepmodules) {
                         $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title('Failed to start Trial')
-                        .textContent('A subcription history exists')
+                        .textContent('A trial can only be started if there are no existing subcriptions.')
                         .ariaLabel('Failed to start Trial')
                         .ok('OK')
                     );

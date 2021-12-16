@@ -84,8 +84,12 @@ public class JobConfigsApiExtension {
     @PreAuthorize("hasAnyRole('CONTENT_AUTHORITY', 'ADMIN') or hasPermission(#jobConfig, 'read') and hasPermission(#jobConfig.service, 'launch')")
     public ResponseEntity launch(@ModelAttribute("jobConfigId") JobConfig jobConfig) throws InterruptedException {
         User currentUser = ftepSecurityService.getCurrentUser();
-        if (exceedsQuotas(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+        try {
+            if (exceedsQuotas(currentUser)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+            }
+        } catch (NoActiveSubscriptionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No active subscription.");
         }
 
         FtepServiceParams.Builder serviceParamsBuilder = FtepServiceParams.newBuilder()
@@ -135,8 +139,12 @@ public class JobConfigsApiExtension {
         LOG.debug("Received new request for systematic processing");
 
         User currentUser = ftepSecurityService.getCurrentUser();
-        if (exceedsQuotas(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+        try {
+            if (exceedsQuotas(currentUser)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+            }
+        } catch (NoActiveSubscriptionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No active subscription.");
         }
 
         // Save the job config
@@ -214,7 +222,7 @@ public class JobConfigsApiExtension {
         }
     }
 
-    private boolean exceedsQuotas(User user) {
+    private boolean exceedsQuotas(User user) throws NoActiveSubscriptionException {
         // Find the first active subscription.
         // TODO: What if several subscriptions are active? 
 	// ADMIN users have no restrictions
@@ -227,6 +235,9 @@ public class JobConfigsApiExtension {
         if (activeSubscription.isPresent()) {
             return activeSubscription.get().exceedsProcessingQuota() || activeSubscription.get().exceedsStorageQuota();
         }
-        return true;
+        throw new NoActiveSubscriptionException();
+    }
+
+    private class NoActiveSubscriptionException extends Exception {
     }
 }
