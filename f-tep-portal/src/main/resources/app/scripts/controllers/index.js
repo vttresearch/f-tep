@@ -67,9 +67,9 @@ define(['../ftepmodules'], function (ftepmodules) {
                     $mdDialog.show(
                         $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title('Failed to start Trial')
-                        .textContent('A trial can only be started if there are no existing subcriptions.')
-                        .ariaLabel('Failed to start Trial')
+                        .title('Trial not available')
+                        .textContent('It appears that you have already enjoyed a platform subscription before. Please consider the available subscription options or kindly contact us with your special request.')
+                        .ariaLabel('Trial not available')
                         .ok('OK')
                     );
             });
