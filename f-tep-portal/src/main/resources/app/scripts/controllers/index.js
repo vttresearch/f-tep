@@ -8,12 +8,12 @@
 define(['../ftepmodules'], function (ftepmodules) {
     'use strict';
 
-    ftepmodules.controller('IndexCtrl', ['ftepProperties', '$scope', '$location', '$window', 'UserService', function (ftepProperties, $scope, $location, $window, UserService) {
+    ftepmodules.controller('IndexCtrl', ['ftepProperties', '$scope', '$location', '$window', 'UserService', '$mdDialog', function (ftepProperties, $scope, $location, $window, UserService, $mdDialog) {
 
         $scope.ftepUrl = ftepProperties.FTEP_URL;
         $scope.sessionEnded = false;
         $scope.timeoutDismissed = false;
-        $scope.subscribed = true;
+        $scope.subscribed = false;
         $scope.activeUser = {};
 
         $scope.$on('no.user', function() {
@@ -23,14 +23,18 @@ define(['../ftepmodules'], function (ftepmodules) {
         $scope.$on('active.user', function(event, user) {
             if ($scope.activeUser.id && user.id) {
                 if ($scope.activeUser.id != user.id) {
+                    $scope.activeUser = user;
                     // User changed, check for subscription
                     $scope.checkActiveSubscription();
                 }
             } else if ($scope.activeUser.id || user.id) {
+                $scope.activeUser = user;
                 // User logged in, check for subscription
                 $scope.checkActiveSubscription();
+            } else {
+                $scope.activeUser = {};
+                $scope.subscribed = false;
             }
-            $scope.activeUser = user;
         });
 
         $scope.hideTimeout = function() {
@@ -43,16 +47,31 @@ define(['../ftepmodules'], function (ftepmodules) {
         };
 
         $scope.checkActiveSubscription = function() {
-            UserService.getCurrentUserWallet().then(function(wallet) {
-                if (wallet.balance <= 0) {
-                    $scope.subscribed = false;
-                }
-            });
+            // Administrators do not need a subscription
+            if ($scope.activeUser.role === "ADMIN") {
+                $scope.subscribed = true;
+            } else {
+                UserService.getActiveSubscription().then(
+                    function(subscription) {
+                        $scope.subscribed = true;
+                    }, function(error) {
+                        $scope.subscribed = false;
+                });
+            }
         }
 
         $scope.startTrial = function() {
             UserService.startTrial().then(function() {
-                $scope.subscribed = true;
+                    $scope.subscribed = true;
+                }, function(error) {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title('Trial not available')
+                        .textContent('It appears that you have already enjoyed a platform subscription before. Please consider the available subscription options or kindly contact us with your special request.')
+                        .ariaLabel('Trial not available')
+                        .ok('OK')
+                    );
             });
         };
 
@@ -62,7 +81,6 @@ define(['../ftepmodules'], function (ftepmodules) {
 
         $scope.version = document.getElementById("version").content;
 
-        $scope.checkActiveSubscription();
         // Trigger a user check to ensure controllers load correctly
         UserService.checkLoginStatus();
     }]);
