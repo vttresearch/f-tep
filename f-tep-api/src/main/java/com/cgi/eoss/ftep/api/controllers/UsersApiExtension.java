@@ -75,7 +75,7 @@ public class UsersApiExtension {
         User currentUser = ftepSecurityService.getCurrentUser();
         LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
 
-        if (!hasActiveSubscription(currentUser, currentTime)) {
+        if (!hasAnySubscription(currentUser)) {
             if (currentUser.getRole().equals(Role.GUEST)) {
                 currentUser.setRole(Role.USER);
             }
@@ -123,6 +123,10 @@ public class UsersApiExtension {
 
     private boolean hasActiveSubscription(User user, LocalDateTime currentTime) {
         return subscriptionDataService.findByOwner(user).stream().anyMatch(subscription -> subscription.isActive(currentTime));
+    }
+
+    private boolean hasAnySubscription(User user) {
+        return subscriptionDataService.findByOwner(user).stream().findAny().isPresent();
     }
 
 }

@@ -5,6 +5,7 @@ import com.cgi.eoss.ftep.model.JobConfig;
 import com.cgi.eoss.ftep.model.Subscription;
 import com.cgi.eoss.ftep.model.SystematicProcessing;
 import com.cgi.eoss.ftep.model.User;
+import com.cgi.eoss.ftep.model.Role;
 import com.cgi.eoss.ftep.persistence.dao.JobConfigDao;
 import com.cgi.eoss.ftep.persistence.dao.JobDao;
 import com.cgi.eoss.ftep.persistence.dao.SystematicProcessingDao;
@@ -83,8 +84,12 @@ public class JobConfigsApiExtension {
     @PreAuthorize("hasAnyRole('CONTENT_AUTHORITY', 'ADMIN') or hasPermission(#jobConfig, 'read') and hasPermission(#jobConfig.service, 'launch')")
     public ResponseEntity launch(@ModelAttribute("jobConfigId") JobConfig jobConfig) throws InterruptedException {
         User currentUser = ftepSecurityService.getCurrentUser();
-        if (exceedsQuotas(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+        try {
+            if (exceedsQuotas(currentUser)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+            }
+        } catch (NoActiveSubscriptionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No active subscription.");
         }
 
         FtepServiceParams.Builder serviceParamsBuilder = FtepServiceParams.newBuilder()
@@ -134,8 +139,12 @@ public class JobConfigsApiExtension {
         LOG.debug("Received new request for systematic processing");
 
         User currentUser = ftepSecurityService.getCurrentUser();
-        if (exceedsQuotas(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+        try {
+            if (exceedsQuotas(currentUser)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
+            }
+        } catch (NoActiveSubscriptionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No active subscription.");
         }
 
         // Save the job config
@@ -213,15 +222,22 @@ public class JobConfigsApiExtension {
         }
     }
 
-    private boolean exceedsQuotas(User user) {
+    private boolean exceedsQuotas(User user) throws NoActiveSubscriptionException {
         // Find the first active subscription.
-        // TODO: What if several subscriptions are active? What if no subscription exists (ADMINs)?
+        // TODO: What if several subscriptions are active? 
+	// ADMIN users have no restrictions
+	if (user != null && user.getRole() != null && user.getRole() == Role.ADMIN) {
+		return false;
+	}
         LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
         Optional<Subscription> activeSubscription = subscriptionDataService.findByOwner(user).stream()
                 .filter(subscription -> subscription.isActive(currentTime)).findFirst();
         if (activeSubscription.isPresent()) {
             return activeSubscription.get().exceedsProcessingQuota() || activeSubscription.get().exceedsStorageQuota();
         }
-        return false;
+        throw new NoActiveSubscriptionException();
+    }
+
+    private class NoActiveSubscriptionException extends Exception {
     }
 }
