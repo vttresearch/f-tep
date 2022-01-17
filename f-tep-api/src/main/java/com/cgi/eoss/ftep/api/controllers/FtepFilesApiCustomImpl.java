@@ -3,6 +3,7 @@ package com.cgi.eoss.ftep.api.controllers;
 import com.cgi.eoss.ftep.catalogue.CatalogueService;
 import com.cgi.eoss.ftep.model.FtepFile;
 import com.cgi.eoss.ftep.model.QFtepFile;
+import com.cgi.eoss.ftep.model.QJob;
 import com.cgi.eoss.ftep.model.QUser;
 import com.cgi.eoss.ftep.model.User;
 import com.cgi.eoss.ftep.persistence.dao.FtepFileDao;
