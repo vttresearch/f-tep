@@ -1,8 +1,9 @@
 # Forestry-TEP
 
 [F-TEP][F-TEP] is an open platform for the forestry community to access and
-exploit EO data in a collaborative virtual work environment. We're a part of
-ESA's [Thematic Exploitation Platform][TEP] initiative.
+exploit EO data in a collaborative virtual work environment. Forestry TEP has 
+been originally developed as part of ESA's Thematic Exploitation Platform 
+initiative.
 
 ## Source
 
@@ -75,7 +76,6 @@ terms of the license are as follows:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [F-TEP]: https://f-tep.com/
-[TEP]: http://tep.eo.esa.int/
 [Github]: https://github.com/vttresearch/f-tep
 [Puppet]: https://puppet.com/
 [cgieoss-ftep]: https://github.com/cgi-eoss/puppet-ftep
