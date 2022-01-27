@@ -76,7 +76,7 @@ terms of the license are as follows:
 
 [F-TEP]: https://f-tep.com/
 [TEP]: http://tep.eo.esa.int/
-[Github]: https://github.com/cgi-eoss/f-tep
+[Github]: https://github.com/vttresearch/f-tep
 [Puppet]: https://puppet.com/
 [cgieoss-ftep]: https://github.com/cgi-eoss/puppet-ftep
 [Vagrant]: https://vagrantup.com/
