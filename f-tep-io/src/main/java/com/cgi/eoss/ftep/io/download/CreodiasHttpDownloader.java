@@ -201,34 +201,46 @@ public class CreodiasHttpDownloader implements Downloader {
             // Change processing baseline
             productId = productId.substring(0, 28) + "%" + productId.substring(32);
         }
-        if (collection.equals("Sentinel2")) {
-            // Limit the query by time to make it faster
-            String productDate = productId.substring(11, 19);
-            SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMdd");
-            sdfIn.setTimeZone(TimeZone.getTimeZone("UTC"));
-            SimpleDateFormat sdfOut = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-            sdfOut.setTimeZone(TimeZone.getTimeZone("UTC"));
-            try {
-                Date d = sdfIn.parse(productDate);
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(d);
-                cal.add(Calendar.DAY_OF_MONTH, 1);
+        if (collection.equals("Sentinel2") || collection.equals("Sentinel1")) {
+            // Limit the query by product date to make it faster
+            String productDate = null;
+            if (collection.equals("Sentinel2")) {
+                productDate = productId.substring(11, 19);
+            } else if (collection.equals("Sentinel1")) {
+                String[] parts = productId.split("_");
+                if (parts.length > 5 && parts[4].length() == 15) {
+                    productDate = parts[4].substring(0, 8);
+                }
+            }
+            if (productDate != null) {
+                SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMdd");
+                sdfIn.setTimeZone(TimeZone.getTimeZone("UTC"));
+                SimpleDateFormat sdfOut = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+                sdfOut.setTimeZone(TimeZone.getTimeZone("UTC"));
+                try {
+                    Date d = sdfIn.parse(productDate);
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(d);
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
 
-                String startDate = sdfOut.format(d);
-                String completionDate = sdfOut.format(cal.getTime());
+                    String startDate = sdfOut.format(d);
+                    String completionDate = sdfOut.format(cal.getTime());
 
-                return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
-                        .addPathSegments("api/collections")
-                        .addPathSegment(collection)
-                        .addPathSegment("search.json")
-                        .addQueryParameter("maxRecords", "1")
-                        .addQueryParameter("productIdentifier", "%" + productId + "%")
-                        .addQueryParameter("status", "all")
-                        .addQueryParameter("startDate", startDate)
-                        .addQueryParameter("completionDate", completionDate)
-                        .build();
-            } catch (ParseException pe) {
-                LOG.error("Failed to parse date from: {}", productDate);
+                    return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
+                            .addPathSegments("api/collections")
+                            .addPathSegment(collection)
+                            .addPathSegment("search.json")
+                            .addQueryParameter("maxRecords", "1")
+                            .addQueryParameter("productIdentifier", "%" + productId + "%")
+                            .addQueryParameter("status", "all")
+                            .addQueryParameter("startDate", startDate)
+                            .addQueryParameter("completionDate", completionDate)
+                            .build();
+                } catch (ParseException pe) {
+                    LOG.error("Failed to parse date from: {}", productDate);
+                }
+            } else {
+                LOG.error("Failed to parse date from: {}", productId);
             }
         }
         return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
