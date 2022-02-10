@@ -211,6 +211,7 @@ public class CreodiasHttpDownloader implements Downloader {
                 if (parts.length > 5 && parts[4].length() == 15) {
                     productDate = parts[4].substring(0, 8);
                 }
+                productId += ".SAFE";
             }
             if (productDate != null) {
                 SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMdd");
