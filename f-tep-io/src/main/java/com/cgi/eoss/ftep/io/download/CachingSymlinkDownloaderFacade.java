@@ -1,6 +1,7 @@
 package com.cgi.eoss.ftep.io.download;
 
 import com.cgi.eoss.ftep.io.ServiceIoException;
+import com.cgi.eoss.ftep.io.ServiceIo429Exception;
 import com.cgi.eoss.ftep.io.ZipHandler;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
