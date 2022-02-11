@@ -1,6 +1,7 @@
 package com.cgi.eoss.ftep.io.download;
 
 import com.cgi.eoss.ftep.io.ServiceIoException;
+import com.cgi.eoss.ftep.io.ServiceIo429Exception;
 import com.cgi.eoss.ftep.logging.Logging;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
