@@ -1,6 +1,7 @@
 package com.cgi.eoss.ftep.io.download;
 
 import com.cgi.eoss.ftep.io.ServiceIoException;
+import com.cgi.eoss.ftep.io.ServiceIo429Exception;
 import com.cgi.eoss.ftep.logging.Logging;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
@@ -121,6 +122,7 @@ public class CreodiasHttpDownloader implements Downloader {
 
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
+                checkTooManyRequests(response);
                 throw new ServiceIoException("Unsuccessful HTTP response: " + response);
             }
 
@@ -138,6 +140,20 @@ public class CreodiasHttpDownloader implements Downloader {
         return outputFile;
     }
 
+    private void checkTooManyRequests(Response response) throws ServiceIo429Exception {
+        if (response != null && response.code() == 429) {
+            double seconds = 30; // Default unless the server gives a delay time
+            if (response.header("Retry-After") != null) {
+                try {
+                    seconds = Double.valueOf(response.header("Retry-After"));
+                } catch (NumberFormatException e) {
+                    LOG.info("Failed to parse Retry-After to seconds: {}", response.header("Retry-After"));
+                }
+            }
+            throw new ServiceIo429Exception("Too many requests response from CREODIAS", seconds);
+        }
+    }
+
     private HttpUrl getDownloadUrl(URI uri) {
         List<HttpUrl> searchUrls = PROTOCOL_COLLECTIONS.get(uri.getScheme()).stream()
                 .map(collection -> buildSearchUrl(collection, uri))
@@ -146,6 +162,8 @@ public class CreodiasHttpDownloader implements Downloader {
         for (HttpUrl searchUrl : searchUrls) {
             try {
                 return findDownloadUrl(uri, searchUrl);
+            } catch (ServiceIo429Exception e) {
+		throw(e);
             } catch (Exception e) {
                 LOG.debug("Failed to locate download URL from search url {}: {}", searchUrl, e.getMessage());
             }
@@ -158,6 +176,7 @@ public class CreodiasHttpDownloader implements Downloader {
 
         try (Response response = searchClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
+                checkTooManyRequests(response);
                 LOG.error("Received unsuccessful HTTP response for CREODIAS search: {}", response.toString());
                 throw new ServiceIoException("Unexpected HTTP response from CREODIAS: " + response.message());
             }
@@ -211,6 +230,8 @@ public class CreodiasHttpDownloader implements Downloader {
                 if (parts.length > 5 && parts[4].length() == 15) {
                     productDate = parts[4].substring(0, 8);
                 }
+                // Sentinel1 search without .SAFE returns multiple features
+                // for some images
                 productId += ".SAFE";
             }
             if (productDate != null) {
