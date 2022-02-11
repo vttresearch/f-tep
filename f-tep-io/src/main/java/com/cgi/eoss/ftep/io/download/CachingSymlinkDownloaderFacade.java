@@ -278,6 +278,12 @@ public class CachingSymlinkDownloaderFacade implements DownloaderFacade {
                             LOG.error("Failed to download with {} for uri {} after {} attempt(s)", downloader, uri, attempt, e);
                         } else {
                             long backoff = (long) Math.pow(1.5, attempt) * 1000;
+                            if (e instanceof ServiceIo429Exception) {
+                                double retryAfter = ((ServiceIo429Exception)e).getRetryAfterSeconds();
+                                if (retryAfter*1000 > backoff) {
+                                    backoff = retryAfter*1000 + 500;
+                                }
+                            }
                             LOG.info("Failed attempt number {} to download resource from {} with {}. Retrying after {}ms", attempt, uri, downloader, backoff);
                             LOG.info("Exception from attempt: {}", e.toString());
                             sleep(backoff);
