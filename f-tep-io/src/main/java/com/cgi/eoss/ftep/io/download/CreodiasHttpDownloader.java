@@ -139,7 +139,7 @@ public class CreodiasHttpDownloader implements Downloader {
         return outputFile;
     }
 
-    private void checkTooManyRequests(Response response) throws ServiceIo429Exception() {
+    private void checkTooManyRequests(Response response) throws ServiceIo429Exception {
         if (response != null && response.code() == 429) {
             double seconds = 30; // Default unless the server gives a delay time
             if (response.header("Retry-After") != null) {
