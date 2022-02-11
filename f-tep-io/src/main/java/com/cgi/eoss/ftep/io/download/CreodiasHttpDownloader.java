@@ -162,6 +162,8 @@ public class CreodiasHttpDownloader implements Downloader {
         for (HttpUrl searchUrl : searchUrls) {
             try {
                 return findDownloadUrl(uri, searchUrl);
+            } catch (ServiceIo429Exception e) {
+		throw(e);
             } catch (Exception e) {
                 LOG.debug("Failed to locate download URL from search url {}: {}", searchUrl, e.getMessage());
             }
