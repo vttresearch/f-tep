@@ -207,6 +207,9 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
     }
 
     // gRPC interface
+    /**
+    * Cancels a job, i.e. removes it from job queue. Does not affect running jobs!
+    */
     @Override
     public void cancelJob(CancelJobParams request, StreamObserver<CancelJobResponse> responseObserver) {
         Lock lock = jobUpdateLocks.get(request.getJob().getId());
@@ -219,12 +222,12 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
             Set<Job> subJobs = job.getSubJobs();
             if (subJobs.size() > 0) {
                 for (Job subJob : subJobs) {
-                    if (subJob.getStatus() != Job.Status.CANCELLED) {
+                    if (subJob.getStatus() == Job.Status.CREATED) {
                         cancelJob(subJob);
                     }
                 }
                 //TODO Check if this implies parent is completed
-            } else if (job.getStatus() != Job.Status.CANCELLED) {
+            } else if (job.getStatus() == Job.Status.CREATED) {
                 cancelJob(job);
             }
             responseObserver.onNext(CancelJobResponse.newBuilder().build());
@@ -235,9 +238,12 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
         }
     }
 
+    /**
+    * Cancels a job, i.e. removes it from job queue. Does not affect running jobs!
+    */
     private void cancelJob(Job job) {
         LOG.info("Cancelling job with id {}", job.getId());
-        JobSpec queuedJobSpec = (JobSpec) ftepQueueService.receiveObject(FtepQueueService.jobQueueName, "jobId = " + job.getId());
+        JobSpec queuedJobSpec = (JobSpec) ftepQueueService.receiveObjectWithTimeout(FtepQueueService.jobQueueName, "jobId = " + job.getId(), 5000);
         if (queuedJobSpec != null) {
             LOG.info("Refunding user for job id {}", job.getId());
             job.setStatus(Status.CANCELLED);
