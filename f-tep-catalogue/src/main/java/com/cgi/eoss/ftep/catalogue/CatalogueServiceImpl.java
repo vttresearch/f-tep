@@ -169,8 +169,20 @@ public class CatalogueServiceImpl extends CatalogueServiceGrpc.CatalogueServiceI
                     ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(worker.getHost(), Integer.parseInt(worker.getMetadata().get("grpcPort")))
                             .usePlaintext(true)
                             .build();
-                    FtepWorkerGrpc.FtepWorkerBlockingStub workerStub = FtepWorkerGrpc.newBlockingStub(managedChannel);
-                    workerStub.cleanCache(CleanCacheRequest.newBuilder().setFileUri(file.getUri().toString()).build());
+                    try {
+                        FtepWorkerGrpc.FtepWorkerBlockingStub workerStub = FtepWorkerGrpc.newBlockingStub(managedChannel);
+                        workerStub.cleanCache(CleanCacheRequest.newBuilder().setFileUri(file.getUri().toString()).build());
+                    } finally {
+                        managedChannel.shutdown();
+                        try {
+                            boolean terminated = managedChannel.awaitTermination(5L, TimeUnit.SECONDS);
+                            if (!terminated) {
+                                LOG.error("Failed to terminate managedChannel");
+                            }
+                        } catch (InterruptedException e) {
+                            LOG.error("managedChannel shutdown interrupted", e);
+                        }
+                    }
                 });
 
         ftepFileDataService.delete(file);

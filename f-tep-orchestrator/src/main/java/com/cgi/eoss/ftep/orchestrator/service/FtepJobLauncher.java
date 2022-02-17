@@ -259,9 +259,24 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
         try {
             com.cgi.eoss.ftep.rpc.Job rpcJob = request.getJob();
             try {
+                // getWorker call builds a new ManagedChannel
+                // Close it after use!
                 FtepWorkerGrpc.FtepWorkerBlockingStub worker = workerFactory.getWorker(jobDataService.getById(rpcJob.getIntJobId()).getConfig());
                 LOG.info("Stop requested for job {}", rpcJob.getId());
-                worker.stopContainer(rpcJob);
+                try {
+                    worker.stopContainer(rpcJob);
+                } finally {
+                    ManagedChannel managedChannel = (ManagedChannel)worker.getChannel();
+                    managedChannel.shutdown();
+                    try {
+                        boolean terminated = managedChannel.awaitTermination(5L, TimeUnit.SECONDS);
+                        if (!terminated) {
+                            LOG.error("Failed to terminate managedChannel");
+                        }
+                    } catch (InterruptedException e) {
+                        LOG.error("managedChannel shutdown interrupted", e);
+                    }
+                }
                 LOG.info("Successfully stopped job {}", rpcJob.getId());
                 responseObserver.onNext(StopServiceResponse.newBuilder().build());
                 responseObserver.onCompleted();
