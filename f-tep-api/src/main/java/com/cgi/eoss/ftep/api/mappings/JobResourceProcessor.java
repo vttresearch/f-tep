@@ -8,6 +8,7 @@ import com.cgi.eoss.ftep.persistence.service.FtepFileDataService;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.EntityLinks;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
  * <p>HATEOAS resource processor for {@link Job}s. Adds extra _link entries for client use, e.g. job container logs.</p>
  */
 @Component
+@Log4j2
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JobResourceProcessor extends BaseResourceProcessor<Job> {
 
@@ -60,7 +62,11 @@ public class JobResourceProcessor extends BaseResourceProcessor<Job> {
                     .filter(e -> e.getValue().startsWith("ftep://"))
                     .forEach(e -> {
                         FtepFile ftepFile = ftepFileDataService.getByUri(e.getValue());
-                        resource.add(entityLinks.linkToSingleResource(ftepFile).withRel("output-" + e.getKey()).expand());
+                        if (ftepFile != null) {
+                            resource.add(entityLinks.linkToSingleResource(ftepFile).withRel("output-" + e.getKey()).expand());
+                        } else {
+                            LOG.error("FtepFile not found for {}", e.getValue());
+                        }
                     });
         }
     }
