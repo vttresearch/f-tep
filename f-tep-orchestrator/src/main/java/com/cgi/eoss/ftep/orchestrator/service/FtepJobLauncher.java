@@ -27,6 +27,7 @@ import com.cgi.eoss.ftep.rpc.worker.JobSpec;
 import com.google.common.util.concurrent.Striped;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import io.grpc.ManagedChannel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.lognet.springboot.grpc.GRpcService;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -207,6 +209,9 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
     }
 
     // gRPC interface
+    /**
+    * Cancels a job, i.e. removes it from job queue. Does not affect running jobs!
+    */
     @Override
     public void cancelJob(CancelJobParams request, StreamObserver<CancelJobResponse> responseObserver) {
         Lock lock = jobUpdateLocks.get(request.getJob().getId());
@@ -219,12 +224,12 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
             Set<Job> subJobs = job.getSubJobs();
             if (subJobs.size() > 0) {
                 for (Job subJob : subJobs) {
-                    if (subJob.getStatus() != Job.Status.CANCELLED) {
+                    if (subJob.getStatus() == Job.Status.CREATED) {
                         cancelJob(subJob);
                     }
                 }
                 //TODO Check if this implies parent is completed
-            } else if (job.getStatus() != Job.Status.CANCELLED) {
+            } else if (job.getStatus() == Job.Status.CREATED) {
                 cancelJob(job);
             }
             responseObserver.onNext(CancelJobResponse.newBuilder().build());
@@ -235,9 +240,12 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
         }
     }
 
+    /**
+    * Cancels a job, i.e. removes it from job queue. Does not affect running jobs!
+    */
     private void cancelJob(Job job) {
         LOG.info("Cancelling job with id {}", job.getId());
-        JobSpec queuedJobSpec = (JobSpec) ftepQueueService.receiveObject(FtepQueueService.jobQueueName, "jobId = " + job.getId());
+        JobSpec queuedJobSpec = (JobSpec) ftepQueueService.receiveObjectWithTimeout(FtepQueueService.jobQueueName, "jobId = " + job.getId(), 5000);
         if (queuedJobSpec != null) {
             LOG.info("Refunding user for job id {}", job.getId());
             job.setStatus(Status.CANCELLED);
@@ -253,9 +261,24 @@ public class FtepJobLauncher extends FtepJobLauncherGrpc.FtepJobLauncherImplBase
         try {
             com.cgi.eoss.ftep.rpc.Job rpcJob = request.getJob();
             try {
+                // getWorker call builds a new ManagedChannel
+                // Close it after use!
                 FtepWorkerGrpc.FtepWorkerBlockingStub worker = workerFactory.getWorker(jobDataService.getById(rpcJob.getIntJobId()).getConfig());
                 LOG.info("Stop requested for job {}", rpcJob.getId());
-                worker.stopContainer(rpcJob);
+                try {
+                    worker.stopContainer(rpcJob);
+                } finally {
+                    ManagedChannel managedChannel = (ManagedChannel)worker.getChannel();
+                    managedChannel.shutdown();
+                    try {
+                        boolean terminated = managedChannel.awaitTermination(5L, TimeUnit.SECONDS);
+                        if (!terminated) {
+                            LOG.error("Failed to terminate managedChannel");
+                        }
+                    } catch (InterruptedException e) {
+                        LOG.error("managedChannel shutdown interrupted", e);
+                    }
+                }
                 LOG.info("Successfully stopped job {}", rpcJob.getId());
                 responseObserver.onNext(StopServiceResponse.newBuilder().build());
                 responseObserver.onCompleted();
