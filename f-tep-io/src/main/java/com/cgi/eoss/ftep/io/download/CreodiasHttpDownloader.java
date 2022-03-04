@@ -142,7 +142,7 @@ public class CreodiasHttpDownloader implements Downloader {
 
     private void checkTooManyRequests(Response response) throws ServiceIo429Exception {
         if (response != null && response.code() == 429) {
-            double seconds = 30; // Default unless the server gives a delay time
+            double seconds = 60; // Default unless the server gives a delay time
             if (response.header("Retry-After") != null) {
                 try {
                     seconds = Double.valueOf(response.header("Retry-After"));
