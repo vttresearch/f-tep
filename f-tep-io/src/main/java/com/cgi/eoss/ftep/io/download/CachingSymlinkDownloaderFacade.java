@@ -270,9 +270,11 @@ public class CachingSymlinkDownloaderFacade implements DownloaderFacade {
         private Path doDownload(Path targetDir, URI uri) throws InterruptedException {
             List<Downloader> availableDownloaders = getAvailableDownloaders(uri);
             for (Downloader downloader : availableDownloaders) {
-                for (int attempt : IntStream.rangeClosed(1, retryLimit).toArray()) {
+                int attemptCounter = 0;
+                for (int attempt = 1; attempt <= retryLimit; attempt++) {
                     LOG.debug("Attempting download with {} (attempt {}) for uri: {}", downloader, attempt, uri);
                     try {
+                        attemptCounter++;
                         return downloader.download(targetDir, uri);
                     } catch (Exception e) {
                         if (attempt == retryLimit) {
@@ -284,8 +286,10 @@ public class CachingSymlinkDownloaderFacade implements DownloaderFacade {
                                 if (retryAfter*1000 > backoff) {
                                     backoff = (long)(retryAfter*1000) + 500;
                                 }
+                                // The problem is just that the service is busy so it is ok to keep trying later
+                                attempt--;
                             }
-                            LOG.info("Failed attempt number {} to download resource from {} with {}. Retrying after {}ms", attempt, uri, downloader, backoff);
+                            LOG.info("Failed attempt number {} to download resource from {} with {}. Retrying after {}ms", attemptCounter, uri, downloader, backoff);
                             LOG.info("Exception from attempt: {}", e.toString());
                             sleep(backoff);
                         }
