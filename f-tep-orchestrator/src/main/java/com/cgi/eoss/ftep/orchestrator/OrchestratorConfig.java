@@ -21,6 +21,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.locks.Lock;
 
@@ -43,7 +46,16 @@ import java.util.concurrent.locks.Lock;
 @EnableEurekaClient
 @ComponentScan(basePackageClasses = OrchestratorConfig.class)
 @EnableScheduling
+@EnableAsync
 public class OrchestratorConfig {
+
+    // Executor for handling asynchronously calls to FtepOrchestratorService.processContainerExit()
+    @Bean(name = "exitExecutor")
+    public TaskExecutor taskExecutor() {
+	ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+	executor.setCorePoolSize(4);
+	return executor;
+    }
 
     @Bean
     public ExpressionParser workerLocatorExpressionParser() {
