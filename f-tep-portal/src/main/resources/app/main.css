@@ -1276,6 +1276,9 @@
   height: 100%;
   z-index: 100;
 }
+.md-select-menu-container {
+  z-index: 101;
+}
 .ftep .md-dialog-container h4 {
   background-color: lightgray;
   font-size: 16px;

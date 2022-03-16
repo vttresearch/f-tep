@@ -50,6 +50,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -197,7 +198,7 @@ public class FtepOrchestratorService {
         jobDataService.save(job);
     }
 
-    @Transactional
+    @Async("exitExecutor")
     public void processContainerExit(String workerId, String jobId, String internalJobId, ContainerExit containerExit) {
         LOG.trace("Processing container exit event: {}", jobId);
         Job job = jobDataService.reload(Long.parseLong(internalJobId));
