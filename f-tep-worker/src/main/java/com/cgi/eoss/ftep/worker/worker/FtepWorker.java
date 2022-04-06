@@ -49,6 +49,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.command.WaitContainerResultCallback;
 import com.google.common.annotations.VisibleForTesting;
@@ -695,8 +696,24 @@ public class FtepWorker extends FtepWorkerGrpc.FtepWorkerImplBase {
                 try {
                     ftepDockerService.pushDockerImage(dockerClient, imageTag, dockerRegistryConfig);
                 } catch (Exception e) {
-                    LOG.warn("Failed to push image {}", imageTag, e);
+                    LOG.error("Failed to push image {}", imageTag, e);
                     throw e;
+                }
+                try {
+                    // Find the correct local image using the tag
+                    List<Image> images = dockerClient.listImagesCmd().withImageNameFilter(imageTag).exec();
+                    if (images.size() > 0) {
+                        // There is the newly built image and possibly an old 
+                        // image pulled from the repository
+                        for (Image image : images) {
+                            dockerClient.removeImageCmd(image.getId()).exec();
+                            LOG.info("Removed local image {}, id {}", imageTag, image.getId());
+                        }
+                    } else {
+                        LOG.warn("Failed to find local image {}", imageTag);
+                    }
+                } catch (Exception e) {
+                    LOG.error("Failed to remove local image {}", imageTag, e);
                 }
             }
 
