@@ -659,6 +659,8 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
         /** ----- END OF RESULTS LAYER ----- **/
 
         /** ----- BASKET LAYER ----- **/
+        var basketProductLayers = [];
+
         var basketLayerFeatures = MapService.basketLayerFeatures;
         var basketLayer = new ol.layer.Vector({
             source: new ol.source.Vector({
@@ -668,12 +670,31 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
         });
 
         $scope.$on('load.basket', function(event, basketFiles) {
+            /* Remove previous product layers */
+            for (var i = 0; i < basketProductLayers.length; i++) {
+                $scope.map.removeLayer(basketProductLayers[i]);
+            }
+            basketProductLayers = [];
+
             $scope.map.removeLayer(resultsLayer);
             basketLayerFeatures.clear();
             if(basketFiles && basketFiles.length > 0){
                 for(var i = 0; i < basketFiles.length; i++){
                     var item = basketFiles[i];
-                    if(item.metadata && item.metadata.geometry && item.metadata.geometry.coordinates){
+                    if (item._links && item._links.wms) {
+                        var source = new ol.source.ImageWMS({
+                            url: item._links.wms.href,
+                            params: {
+                                format: 'image/png'
+                            },
+                            projection: EPSG_3857
+                        });
+                        var productLayer = new ol.layer.Image({
+                            source: source
+                        });
+                        basketProductLayers.push(productLayer);
+                        $scope.map.addLayer(productLayer);
+                    } else if(item.metadata && item.metadata.geometry && item.metadata.geometry.coordinates){
                         var pol = getOlGeometryObject(item.metadata.geometry);
                         var resultItem =  new ol.Feature({
                              geometry: pol,
@@ -683,11 +704,22 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
                     }
                 }
                 $scope.map.addLayer(basketLayer);
-                $scope.map.getView().fit(basketLayer.getSource().getExtent(), $scope.map.getSize(), { padding: padding });
+                if (basketLayerFeatures.getLength() > 0) {
+                  $scope.map.getView().fit(basketLayer.getSource().getExtent(), $scope.map.getSize(), { padding: padding });
+                } else {
+                  if (basketFiles[basketFiles.length-1].metadata) {
+                      // Zoom into place
+                      var polygon = getOlGeometryObject(basketFiles[basketFiles.length-1].metadata.geometry);
+                      $scope.map.getView().fit(polygon.getExtent(), $scope.map.getSize(), { padding: padding });
+                  }
+                }
             }
         });
 
         $scope.$on('unload.basket', function(event) {
+            for (var i = 0; i < basketProductLayers.length; i++) {
+                $scope.map.removeLayer(basketProductLayers[i]);
+            }
             $scope.map.removeLayer(basketLayer);
             $scope.map.addLayer(resultsLayer);
         });
