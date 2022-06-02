@@ -56,7 +56,11 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row"
+                 has-permission="ADMIN"
+                 permission-source="{{
+                     currentRowData[row.entity.id]
+                 }}">
                 <div class="col-xl-6 col-md-11 no-padding">
                     <div class="right-button">
                         <h3>
@@ -136,7 +140,11 @@
                     </md-input-container>
                 </div>
             </div>
-            <div class="row">
+            <div class="row"
+                 has-permission="ADMIN"
+                 permission-source="{{
+                     currentRowData[row.entity.id]
+                 }}">
                 <div class="col-md-11 no-padding">
                     <h3>
                         Delete

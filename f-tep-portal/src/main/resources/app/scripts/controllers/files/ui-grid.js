@@ -90,6 +90,13 @@ define(['../../ftepmodules'], function(ftepmodules) {
                         $scope.uiGridOptions.expandableRowScope.currentRowData[row.entity.id] = file;
                         $scope.uiGridOptions.expandableRowScope.currentRowData[row.entity.id].geometry = JSON.stringify(file.geometry);
                     }
+                }, function(error) {
+                  FileService.getFile(row.entity, 'detailedFtepFileWorkspaceWoGroups').then(function (file) {
+                      if (row.isExpanded) {
+                          $scope.uiGridOptions.expandableRowScope.currentRowData[row.entity.id] = file;
+                          $scope.uiGridOptions.expandableRowScope.currentRowData[row.entity.id].geometry = JSON.stringify(file.geometry);
+                      }
+                  })
                 });
             }
 
