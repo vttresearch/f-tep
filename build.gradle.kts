@@ -23,7 +23,7 @@ plugins {
 
 allprojects {
     group = "com.cgi.eoss.f-tep"
-    version = "3.6.7"
+    version = "3.6.8"
 
     buildscript {
         repositories {
@@ -33,6 +33,7 @@ allprojects {
 
     repositories {
         maven(url = project.property("mavenCentralUrl")!!)
+        maven(url = project.property("mavenUrl2")!!)
         maven(url = project.property("mavenGeosolutionsUrl")!!)
         maven(url = project.property("mavenOsgeoUrl")!!)
     }
