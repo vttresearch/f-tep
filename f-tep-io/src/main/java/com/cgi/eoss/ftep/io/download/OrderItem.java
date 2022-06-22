@@ -2,6 +2,7 @@ package com.cgi.eoss.ftep.io.download;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import java.util.Map;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -14,6 +15,6 @@ public class OrderItem {
     private String newIdentifier;
     private Order order;
     private String product;
-    private String result;
+    private Map<String,String> result;
     private String status; // enum: "created", "ready_to_be_consumed_next", "consumed", "processing", "downloading", "not_found", "not_valid", "done", "removed_from_cache", "removing_from_cache", "scheduled_for_deletion", "failed"
 }

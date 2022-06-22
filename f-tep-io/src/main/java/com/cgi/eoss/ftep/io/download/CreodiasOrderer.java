@@ -164,7 +164,7 @@ public class CreodiasOrderer {
 
                 String responseBody = response.body().string();
 
-                List<Map<String, Object>> results = JsonPath.read(responseBody, "$.results");
+                List<Map<String, Object>> results = JsonPath.read(responseBody, "$.items");
                 List<Order> pageOrders = results.stream()
                         .map(result -> objectMapper.convertValue(result, Order.class))
                         .collect(Collectors.toList());
@@ -202,7 +202,8 @@ public class CreodiasOrderer {
             }
 
             String responseBody = response.body().string();
-            int orderCount = JsonPath.read(responseBody, "$.count");
+
+            int orderCount = JsonPath.read(responseBody, "$.total");
             return orderCount;
         } catch (IOException e) {
             LOG.error("Error when retrieving the total order count from CREODIAS: " + e.getMessage());
@@ -278,11 +279,12 @@ public class CreodiasOrderer {
             }
             String responseBody = response.body().string();
 
-            List<Map<String, Object>> results = JsonPath.read(responseBody, "$.results");
+            List<Map<String, Object>> results = JsonPath.read(responseBody, "$.items");
             return results.stream()
                     .map(res -> objectMapper.convertValue(res, OrderItem.class))
                     .collect(Collectors.toList());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            LOG.error("Error when requesting the order details from CREODIAS for order " + orderId, e);
             e.printStackTrace();
             throw new ServiceIoException("Error when requesting the order details from CREODIAS for order " + orderId + ": " + e.getMessage());
         }
