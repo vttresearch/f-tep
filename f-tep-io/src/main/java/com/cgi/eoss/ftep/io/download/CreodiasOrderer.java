@@ -279,11 +279,12 @@ public class CreodiasOrderer {
             }
             String responseBody = response.body().string();
 
-            List<Map<String, Object>> results = JsonPath.read(responseBody, "$.results");
+            List<Map<String, Object>> results = JsonPath.read(responseBody, "$.items");
             return results.stream()
                     .map(res -> objectMapper.convertValue(res, OrderItem.class))
                     .collect(Collectors.toList());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            LOG.error("Error when requesting the order details from CREODIAS for order " + orderId, e);
             e.printStackTrace();
             throw new ServiceIoException("Error when requesting the order details from CREODIAS for order " + orderId + ": " + e.getMessage());
         }
