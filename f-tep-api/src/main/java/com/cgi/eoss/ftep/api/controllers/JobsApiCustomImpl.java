@@ -146,7 +146,7 @@ public class JobsApiCustomImpl extends BaseRepositoryApiImpl<Job> implements Job
             // Partition the visible ids to subsets < 32767 elements as the DB 
             // interface breaks if there are over 32767 bind variables in a query
             List<Long> visibleIdsList = Lists.newArrayList(visibleIds);
-            Collections.sort(visibleIdsList, Collections.reverseOrder());
+            Collections.sort(visibleIdsList);
             List<List<Long>> partitionedIds = Lists.partition(visibleIdsList, 30000);
 
             long offset = 0;
