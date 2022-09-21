@@ -137,7 +137,7 @@ public class FtepFilesApiCustomImpl extends BaseRepositoryApiImpl<FtepFile> impl
             }
             // Total result item count as a final long so that conversion to LongSupplier works
             final long total = totalCount;
-            return PageableExecutionUtils.getPage(files, pageable, () -> new Long(total));
+            return PageableExecutionUtils.getPage(files, pageable, () -> total);
         }
     }
 
@@ -186,7 +186,6 @@ public class FtepFilesApiCustomImpl extends BaseRepositoryApiImpl<FtepFile> impl
             // Partition the visible ids to subsets < 32767 elements as the DB 
             // interface breaks if there are over 32767 bind variables in a query
             List<Long> visibleIdsList = Lists.newArrayList(visibleIds);
-            Collections.sort(visibleIdsList, Collections.reverseOrder());
             List<List<Long>> partitionedIds = Lists.partition(visibleIdsList, 30000);
 
             long offset = 0;
@@ -207,7 +206,6 @@ public class FtepFilesApiCustomImpl extends BaseRepositoryApiImpl<FtepFile> impl
             for (List<Long> ids : partitionedIds) {
                 JPQLQuery<FtepFile> q = from(QFtepFile.ftepFile).where(predicate);
                 q.where(getIdPath().in(ids));
-                q.orderBy(getIdPath().desc());
                 
                 long fetchCount = q.fetchCount();
 
