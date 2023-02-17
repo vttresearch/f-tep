@@ -3,8 +3,13 @@ package com.cgi.eoss.ftep.search.providers.creodias;
 import com.cgi.eoss.ftep.catalogue.external.ExternalProductDataService;
 import com.cgi.eoss.ftep.search.api.SearchParameters;
 import com.cgi.eoss.ftep.search.api.SearchResults;
+import com.cgi.eoss.ftep.search.providers.creodias.odata.ODataItem;
+import com.cgi.eoss.ftep.search.providers.creodias.odata.ODataResult;
 import com.cgi.eoss.ftep.search.providers.resto.RestoResult;
 import com.cgi.eoss.ftep.search.providers.resto.RestoSearchProvider;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
@@ -26,9 +31,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.hateoas.Link;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +43,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Log4j2
 public class CreodiasSearchProvider extends RestoSearchProvider {
@@ -46,19 +50,20 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
     @Data
     @Builder
     private static final class MissionPlatform {
+
         private final String mission;
         private final String platform;
     }
 
     private static final BiMap<MissionPlatform, String> SUPPORTED_MISSIONS = ImmutableBiMap.<MissionPlatform, String>builder()
-            .put(MissionPlatform.builder().mission("envisat").platform(null).build(), "Envisat")
-            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-5").build(), "Landsat5")
-            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-7").build(), "Landsat7")
-            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-8").build(), "Landsat8")
-            .put(MissionPlatform.builder().mission("sentinel1").platform(null).build(), "Sentinel1")
-            .put(MissionPlatform.builder().mission("sentinel2").platform(null).build(), "Sentinel2")
-            .put(MissionPlatform.builder().mission("sentinel3").platform(null).build(), "Sentinel3")
-            .put(MissionPlatform.builder().mission("sentinel5").platform(null).build(), "Sentinel5P")
+            .put(MissionPlatform.builder().mission("envisat").platform(null).build(), "ENVISAT")
+            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-5").build(), "LANDSAT-5")
+            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-7").build(), "LANDSAT-7")
+            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-8").build(), "LANDSAT-8")
+            .put(MissionPlatform.builder().mission("sentinel1").platform(null).build(), "SENTINEL-1")
+            .put(MissionPlatform.builder().mission("sentinel2").platform(null).build(), "SENTINEL-2")
+            .put(MissionPlatform.builder().mission("sentinel3").platform(null).build(), "SENTINEL-3")
+            .put(MissionPlatform.builder().mission("sentinel5").platform(null).build(), "SENTINEL-5P")
             .build();
     private static final Set<String> INTERNAL_FTEP_PARAMS = ImmutableSet.of(
             "catalogue",
@@ -73,20 +78,17 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
             .put("s3ProcessingLevel", "processingLevel")
             .put("landsatProcessingLevel", "processingLevel")
             .put("s1ProductType", "productType")
-			.put("s1Platform", "platform")
+            .put("s1Platform", "platform")
             .put("productDateStart", "startDate")
             .put("productDateEnd", "completionDate")
             .put("maxCloudCover", "cloudCover")
             .put("identifier", "productIdentifier")
             .build();
     private static final Map<String, Function<String, String>> PARAMETER_VALUE_MAPPING = ImmutableMap.<String, Function<String, String>>builder()
-            .put("identifier", v -> "%" + v + "%")
             .put("s1ProcessingLevel", v -> "LEVEL" + v)
-            .put("s2ProcessingLevel", v -> "LEVEL" + v)
-            .put("s3ProcessingLevel", v -> "LEVEL" + v)
+            .put("s2ProcessingLevel", v -> "S2MSI" + v)
             .put("landsatProcessingLevel", v -> "LEVEL" + v)
-            .put("maxCloudCover", v -> "[0," + v + "]")
-            .put("orbitDirection", String::toLowerCase)
+            .put("orbitDirection", String::toUpperCase)
             .build();
 
     private final int priority;
@@ -114,9 +116,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         Map<String, String> queryParameters = new HashMap<>();
 
         if (usableProductsOnly) {
-            queryParameters.put("status", "0|34");
-        } else {
-            queryParameters.put("status", "all");
+            queryParameters.put("status", "ONLINE");
         }
 
         parameters.getParameters().asMap().entrySet().stream()
@@ -140,8 +140,8 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
     public boolean supports(SearchParameters parameters) {
         String catalogue = parameters.getValue("catalogue", "UNKNOWN");
         String mission = parameters.getValue("mission", "UNKNOWN");
-        return catalogue.equals("SATELLITE") &&
-                (SUPPORTED_MISSIONS.keySet().stream().map(MissionPlatform::getMission).anyMatch(m -> m.equals(mission)) || mission.equals("httpcreodias"));
+        return catalogue.equals("SATELLITE")
+                && (SUPPORTED_MISSIONS.keySet().stream().map(MissionPlatform::getMission).anyMatch(m -> m.equals(mission)) || mission.equals("httpcreodias"));
     }
 
     @Override
@@ -200,11 +200,11 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
 
         String collection = feature.getProperty("collection");
         String productSource = SUPPORTED_MISSIONS.inverse().get(collection).getMission();
-        String productIdentifier = ((String) feature.getProperty("title")).replace(".SAFE", "");
+        String productIdentifier = ((String) feature.getProperty("name")).replace(".SAFE", "");
         URI ftepUri = externalProductService.getUri(productSource, productIdentifier);
 
         if (isSentinel2ForL2A(parameters)) {
-            Optional<String> productIdentifierForL2A = getL2AProductIdentifier(productIdentifier);
+            Optional<String> productIdentifierForL2A = getL2AProductIdentifierOData(productIdentifier);
 
             if (productIdentifierForL2A.isPresent()) {
                 // Use the L2A URI
@@ -214,7 +214,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
                     // Update values
                     collection = feature.getProperty("collection");
                     productSource = SUPPORTED_MISSIONS.inverse().get(collection).getMission();
-                    productIdentifier = ((String) feature.getProperty("title")).replace(".SAFE", "");
+                    productIdentifier = ((String) feature.getProperty("name")).replace(".SAFE", "");
                     ftepUri = externalProductService.getUri(productSource, productIdentifier);
 
                 } catch (Exception e) {
@@ -229,8 +229,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
             }
         }
 
-        int status = feature.getProperty("status");
-        boolean ftepUsable = IntStream.of(31, 32).noneMatch(x -> x == status);
+        boolean ftepUsable = feature.getProperty("online"); 
 
         // Shuffle the CREODIAS properties into a sub-object for consistency across all search providers
         Map<String, Object> extraParams = new HashMap<>(feature.getProperties());
@@ -239,12 +238,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         Set<Link> featureLinks = new HashSet<>();
         featureLinks.add(new Link(ftepUri.toASCIIString(), "ftep"));
 
-        Long filesize;
-        if (extraParams.get("services") != null && Map.class.isAssignableFrom(extraParams.get("services").getClass())) {
-            filesize = Optional.ofNullable(((Map<String, Map<String, Object>>) extraParams.get("services")).get("download")).map(dl -> ((Number) dl.get("size")).longValue()).orElse(0L);
-        } else {
-            filesize = 0L;
-        }
+        Long filesize = Long.valueOf(extraParams.get("contentLength").toString());
 
         // Required parameters for FtepFile ingestion
         feature.setProperty("productSource", productSource);
@@ -256,9 +250,9 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         // Set "interesting" parameters which clients might want in an easily-accessible form
         // Some are not present depending on the result type, so we have to safely traverse the dynamic properties map
         // These are added to extraParams so that the FtepFile/Resto schema is predictable
-        Optional.ofNullable(extraParams.get("startDate"))
+        Optional.ofNullable(extraParams.get("contentDateStart"))
                 .ifPresent(startDate -> extraParams.put("ftepStartTime", startDate));
-        Optional.ofNullable(extraParams.get("completionDate"))
+        Optional.ofNullable(extraParams.get("contentDateEnd"))
                 .ifPresent(completionDate -> extraParams.put("ftepEndTime", completionDate));
         Optional.ofNullable(extraParams.get("cloudCover"))
                 .ifPresent(cloudCoverage -> extraParams.put("ftepCloudCoverage", cloudCoverage));
@@ -266,9 +260,9 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
                 .ifPresent(orbitDirection -> extraParams.put("ftepOrbitDirection", orbitDirection));
         Optional.ofNullable(extraParams.get("productType"))
                 .ifPresent(productType -> extraParams.put("ftepProductType", productType));
-        Optional.ofNullable(extraParams.get("updated"))
+        Optional.ofNullable(extraParams.get("modificationDate"))
                 .ifPresent(updated -> extraParams.put("ftepUpdated", updated));
-        Optional.ofNullable(extraParams.get("published"))
+        Optional.ofNullable(extraParams.get("publicationDate"))
                 .ifPresent(published -> extraParams.put("ftepUpdated", published));
         feature.setProperty("extraParams", extraParams);
 
@@ -283,43 +277,78 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         return feature;
     }
 
-    private String getL2ADirectoryName(String productIdentifier) {
-        String timeStr = productIdentifier.split("_")[2];
-        String year = timeStr.substring(0, 4);
-        String month = timeStr.substring(4, 6);
-        String day = timeStr.substring(6, 8);
-
-        return String.format("/eodata/Sentinel-2/MSI/L2A/%s/%s/%s", year, month, day);
-    }
-
-    private Optional<String> getL2AProductIdentifier(String productIdentifier) {
+    private Optional<String> getL2AProductIdentifierOData(String productIdentifier) {
         // Beginning of the corresponding L2A product identifier name
         // Change processing level and remove processing time
         String substringForL2A = productIdentifier.substring(0, 44).replaceFirst("L1C", "L2A");
         // Change processing baseline
-        substringForL2A = substringForL2A.substring(0, 28) + "\\d\\d\\d\\d" + substringForL2A.substring(32);
-        // Add string start and end to pattern
-        substringForL2A = "^" + substringForL2A + ".*";
+        String namePart1 = substringForL2A.substring(0, 28);
+        String namePart2 = substringForL2A.substring(32);
 
-        // List files in the corresponding L2A folder in /eodata and check if one starting with substringForL2A exists
-        File dir = new File(getL2ADirectoryName(productIdentifier));
-        if (dir.exists() && dir.isDirectory()) {
-            for (File file : dir.listFiles()) {
-                if (file.getName().matches(substringForL2A)) {
-                    return Optional.of(file.getName().replace(".SAFE", ""));
+        String timeStr = namePart1.split("_")[2];
+        String year = timeStr.substring(0, 4);
+        String month = timeStr.substring(4, 6);
+        String day = timeStr.substring(6, 8);
+
+        String filter = "Collection/Name eq 'SENTINEL-2'";
+        filter += " and contains(Name,'" + namePart1 + "') and contains(Name, '" + namePart2 + "')";
+        filter += " and ContentDate/Start ge " + year + "-" + month + "-" + day + "T00:00:00.000Z";
+        filter += " and ContentDate/Start le " + year + "-" + month + "-" + day + "T23:59:59.000Z";
+
+        // Need to remove the /resto part from the base URL!
+        HttpUrl.Builder httpUrl = baseUrl.newBuilder().removePathSegment(0).addPathSegments("odata/v1/Products");
+        httpUrl.addQueryParameter("$filter", filter);
+
+        Request request = new Request.Builder().url(httpUrl.build()).get().build();
+
+        LOG.debug("Performing HTTP request for OData search: {}", httpUrl);
+
+        try ( Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                LOG.error("Received unsuccessful HTTP response for OData search: {}", response.toString());
+                throw new IOException("Unexpected HTTP response code from OData: " + response);
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            JsonFactory factory = mapper.getFactory();
+            JsonParser parser = factory.createParser(response.body().string());
+            JsonNode jsonRoot = mapper.readTree(parser);
+            JsonNode valueNode = jsonRoot.findValue("value");
+            if (valueNode.isArray()) {
+                if (valueNode.size() == 0) {
+                    LOG.info("No match found for product with identifier {}", productIdentifier);
+                } else {
+                    if (valueNode.size() != 1) {
+                        LOG.warn("No unique match found for product with identifier {}", productIdentifier);
+                    }
+                    JsonNode item = valueNode.get(0);
+                    String value = item.findValue("Name").asText();
+
+                    return Optional.of(value);
                 }
             }
+        } catch (Exception e) {
+            LOG.error("Could not perform HTTP request for OData search at {}", request.url(), e);
         }
+
         return Optional.empty();
     }
 
     private Feature searchNestedL2A(String productIdentifier) throws IOException {
         // Perform another search for this particular L2A product
+        String[] parts = productIdentifier.split("/");
+        String namePart = parts[parts.length - 1];
+        String timeStr = namePart.split("_")[2];
+        String year = timeStr.substring(0, 4);
+        String month = timeStr.substring(4, 6);
+        String day = timeStr.substring(6, 8);
+
         SearchParameters newL2ASearchParams = new SearchParameters();
         newL2ASearchParams.setRequestUrl(SearchParameters.DEFAULT_REQUEST_URL);
         newL2ASearchParams.setParameters(ImmutableListMultimap.<String, String>builder()
                 .put("mission", "sentinel2")
-                .put("productIdentifier", "%" + productIdentifier + "%")
+                .put("productIdentifier", productIdentifier)
+                .put("startDate", year + "-" + month + "-" + day + "T00:00:00Z")
+                .put("completionDate", year + "-" + month + "-" + day + "T23:59:59Z")
                 .build());
         newL2ASearchParams.setNested(true);
 
@@ -341,34 +370,86 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
 
         String collectionName = getCollection(parameters);
 
-        HttpUrl.Builder httpUrl = baseUrl.newBuilder().addPathSegments("api/collections").addPathSegment(collectionName).addPathSegment("search.json");
-
+        // Need to remove the /resto part from the base URL!
+        HttpUrl.Builder httpUrl = baseUrl.newBuilder().removePathSegment(0).addPathSegments("odata/v1/Products");
+        // Add paging
         getPagingParameters(parameters).forEach(httpUrl::addQueryParameter);
-        getQueryParameters(parameters).forEach(httpUrl::addQueryParameter);
+        // Add count
+        httpUrl.addQueryParameter("$count", "true");
+        // Add attributes
+        httpUrl.addQueryParameter("$expand", "Attributes");
+        // Build filter from query parameters
+        String filter = "Collection/Name eq '" + collectionName + "'";
+
+        Map<String, String> queryParams = getQueryParameters(parameters);
+        LOG.info(queryParams);
+
+        if (queryParams.containsKey("productIdentifier")) {
+            filter += " and contains(Name,'" + queryParams.get("productIdentifier") + "')";
+        }
+        if (queryParams.containsKey("startDate")) {
+            filter += " and ContentDate/Start ge " + queryParams.get("startDate");
+        }
+        if (queryParams.containsKey("completionDate")) {
+            filter += " and ContentDate/Start le " + queryParams.get("completionDate");
+        }
+        if (queryParams.containsKey("cloudCover")) {
+            filter += " and Attributes/OData.CSC.DoubleAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value le "
+                    + queryParams.get("cloudCover") + ")";
+        }
+        if (queryParams.containsKey("processingLevel")) {
+            filter += " and Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'processingLevel' and att/OData.CSC.StringAttribute/Value eq '" 
+                    + queryParams.get("processingLevel") + "')";
+        }
+        if (queryParams.containsKey("productType")) {
+            filter += " and Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq '" 
+                    + queryParams.get("productType") + "')";
+        }
+        if (queryParams.containsKey("platform")) {
+            filter += " and Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'platformSerialIdentifier' and att/OData.CSC.StringAttribute/Value eq '" 
+                    + queryParams.get("platform").replace("S1","") + "')";
+        }
+        if (queryParams.containsKey("orbitDirection")) {
+            filter += " and Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'orbitDirection' and att/OData.CSC.StringAttribute/Value eq '" 
+                    + queryParams.get("orbitDirection") + "')";
+        }
+        // Bounding box search:
+        if (queryParams.containsKey("geometry")) {
+            filter += " and OData.CSC.Intersects(area=geography'SRID=4326;" 
+                    + queryParams.get("geometry") + "')";
+        }
+        httpUrl.addQueryParameter("$filter", filter);
 
         Request request = new Request.Builder().url(httpUrl.build()).get().build();
 
-        LOG.debug("Performing HTTP request for Resto search: {}", httpUrl);
+        LOG.debug("Performing HTTP request for OData search: {}", httpUrl);
 
-        try (Response response = client.newCall(request).execute()) {
+        try ( Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 LOG.error("Received unsuccessful HTTP response for Resto search: {}", response.toString());
                 throw new IOException("Unexpected HTTP response code from Resto: " + response);
             }
             LOG.info("Received successful response for Resto search: {}", request.url());
-            RestoResult restoResult = objectMapper.readValue(response.body().string(), RestoResult.class);
+            ODataResult oDataResult = objectMapper.readValue(response.body().string(), ODataResult.class);
 
-            SearchResults.Page page = getPageInfo(parameters, restoResult);
+            SearchResults.Page page = getPageInfo(parameters, oDataResult);
             // Set the processing level back to L2A if applicable
             if (searchL2A) {
                 parameters.setValue("s2ProcessingLevel", "2A");
             }
+            List<Feature> features = new ArrayList<>();
+            for (ODataItem item:oDataResult.getValues()) {
+                Feature f = item.toFeature();
+                f.setProperty("collection", collectionName);
+                features.add(f);
+            }
             return postProcess(SearchResults.builder()
                     .parameters(parameters)
                     .page(page)
-                    .features(restoResult.getFeatures())
-                    .links(getLinks(parameters.getRequestUrl(), page, restoResult))
+                    .features(features)
+                    .links(getPagingLinks(page, parameters.getRequestUrl()))
                     .build());
+            
         } catch (Exception e) {
             LOG.error("Could not perform HTTP request for Resto search at {}", request.url(), e);
             throw e;
@@ -386,4 +467,27 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         }
         return false;
     }
+
+    @Override
+    public Map<String, String> getPagingParameters(SearchParameters parameters) {
+        Map<String, String> pagingParameters = new HashMap<>();
+        pagingParameters.put("$top", Integer.toString(parameters.getResultsPerPage()));
+        pagingParameters.put("$skip", Integer.toString(parameters.getPage() * parameters.getResultsPerPage()));
+        return pagingParameters;
+    }
+
+    protected SearchResults.Page getPageInfo(SearchParameters parameters, ODataResult result) {
+        long queryResultsPerPage = parameters.getResultsPerPage();
+        long queryPage = parameters.getPage();
+        long totalResultsCount = result.getCount();
+        long totalPages = (long)Math.ceil(totalResultsCount / (double)queryResultsPerPage);
+
+        return SearchResults.Page.builder()
+                .totalElements(totalResultsCount)
+                .size(queryResultsPerPage)
+                .number(queryPage)
+                .totalPages(totalPages)
+                .build();
+    }
+    
 }

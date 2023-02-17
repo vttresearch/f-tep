@@ -73,16 +73,16 @@ public class IoConfig {
         return new ServiceInputOutputManagerImpl(ftepServerClient, downloaderFacade);
     }
 
-    @Bean
-    public CEDADownloader cedaDownloader(DownloaderFacade downloaderFacade, OkHttpClient okHttpClient, IoConfigurationProperties properties) {
-        IoConfigurationProperties.Downloader.Ceda cedaProperties = properties.getDownloader().getCeda();
-        return new CEDADownloader(
-                downloaderFacade,
-                okHttpClient,
-                HttpUrl.parse(cedaProperties.getCedaSearchUrl()),
-                cedaProperties.getFtpUrlBase(),
-                ProtocolPriority.builder().overallPriority(cedaProperties.getOverallPriority()).build());
-    }
+//    @Bean
+//    public CEDADownloader cedaDownloader(DownloaderFacade downloaderFacade, OkHttpClient okHttpClient, IoConfigurationProperties properties) {
+//        IoConfigurationProperties.Downloader.Ceda cedaProperties = properties.getDownloader().getCeda();
+//        return new CEDADownloader(
+//                downloaderFacade,
+//                okHttpClient,
+//                HttpUrl.parse(cedaProperties.getCedaSearchUrl()),
+//                cedaProperties.getFtpUrlBase(),
+//                ProtocolPriority.builder().overallPriority(cedaProperties.getOverallPriority()).build());
+//    }
 
     @Bean
     public FtepDownloader ftepDownloader(DownloaderFacade downloaderFacade, FtepServerClient ftepServerClient) {

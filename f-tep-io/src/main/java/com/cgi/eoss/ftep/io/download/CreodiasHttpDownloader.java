@@ -43,14 +43,14 @@ import java.util.TimeZone;
 public class CreodiasHttpDownloader implements Downloader {
 
     private static final Multimap<String, String> PROTOCOL_COLLECTIONS = ImmutableMultimap.<String, String>builder()
-            .put("sentinel1", "Sentinel1")
-            .put("sentinel2", "Sentinel2")
-            .put("sentinel3", "Sentinel3")
-            .put("sentinel5", "Sentinel5P")
-            .put("landsat", "Landsat5")
-            .put("landsat", "Landsat7")
-            .put("landsat", "Landsat8")
-            .put("envisat", "Envisat")
+            .put("sentinel1", "SENTINEL-1")
+            .put("sentinel2", "SENTINEL-2")
+            .put("sentinel3", "SENTINEL-3")
+            .put("sentinel5", "SENTINEL-5P")
+            .put("landsat", "LANDSAT-5")
+            .put("landsat", "LANDSAT-7")
+            .put("landsat", "LANDSAT-8")
+            .put("envisat", "ENVISAT")
             .build();
 
     private final OkHttpClient httpClient;
@@ -165,7 +165,7 @@ public class CreodiasHttpDownloader implements Downloader {
             } catch (ServiceIo429Exception e) {
 		throw(e);
             } catch (Exception e) {
-                LOG.debug("Failed to locate download URL from search url {}: {}", searchUrl, e.getMessage());
+                LOG.info("Failed to locate download URL from search url {}: {}", searchUrl, e.getMessage());
             }
         }
         throw new ServiceIoException("Unable to locate CREODIAS product data for " + uri);
@@ -183,21 +183,29 @@ public class CreodiasHttpDownloader implements Downloader {
 
             String responseBody = response.body().string();
 
-            boolean emptyResults = ((Integer) JsonPath.read(responseBody, "$.features.length()")) == 0;
+            //boolean emptyResults = ((Integer) JsonPath.read(responseBody, "$.features.length()")) == 0;
+            boolean emptyResults = ((Integer) JsonPath.read(responseBody, "$.value.length()")) == 0;
             if (emptyResults) {
                 throw new NoSuchElementException();
             }
 
-            String productId = JsonPath.read(responseBody, "$.features[0].id");
-            int status = JsonPath.read(responseBody, "$.features[0].properties.status");
+            //String productId = JsonPath.read(responseBody, "$.features[0].id");
+            String productId = JsonPath.read(responseBody, "$.value[0].Id");
+            //int status = JsonPath.read(responseBody, "$.features[0].properties.status");
+            boolean status = JsonPath.read(responseBody, "$.value[0].Online");
 
             // If the status is 31 or 32, the product is offline and must be ordered from CREODIAS
-            if (status == WAITING_FOR_DOWNLOAD_STATUS || status == ORDERED_STATUS) {
-                orderProduct(uri);
-            }
+            //if (status == WAITING_FOR_DOWNLOAD_STATUS || status == ORDERED_STATUS) {
+            //    orderProduct(uri);
+            //}
 
+//            return HttpUrl.parse(properties.getCreodiasDownloadUrl()).newBuilder()
+//                    .addPathSegments(productId)
+//                    .build();
             return HttpUrl.parse(properties.getCreodiasDownloadUrl()).newBuilder()
-                    .addPathSegments(productId)
+                    .addPathSegments("odata/v1")
+                    .addPathSegments("Products(" + productId + ")")
+                    .addPathSegment("$value")
                     .build();
         } catch (SocketTimeoutException timeout) {
             Logging.withUserLoggingContext(() -> LOG.error("Timeout locating EO product data for {}; please try again and contact the F-TEP support team if the error persists", uri));
@@ -213,19 +221,21 @@ public class CreodiasHttpDownloader implements Downloader {
     private HttpUrl buildSearchUrl(String collection, URI uri) {
         // Trim the leading slash from the path and get the search URL
         String productId = uri.getPath().substring(1);
+        String productIdFilter = " and contains(Name,'"+productId+"')";
         if (uri.getQuery() != null && uri.getQuery().contains("L2A=true")) {
             // URI is of the format S2A_MSIL1C_20190918T114351_N0208_R123_T29UNV_20190918T183519?L2A=true
             // Change processing level and remove processing time
             productId = productId.replaceFirst("L1C", "L2A").substring(0, 44);
             // Change processing baseline
-            productId = productId.substring(0, 28) + "%" + productId.substring(32);
+            //productId = productId.substring(0, 28) + "%" + productId.substring(32);
+            productIdFilter = " and contains(Name,'"+productId.substring(0, 28)+"') and contains(Name,'" + productId.substring(32) + "')";
         }
-        if (collection.equals("Sentinel2") || collection.equals("Sentinel1")) {
+        if (collection.equals("SENTINEL-2") || collection.equals("SENTINEL-1")) {
             // Limit the query by product date to make it faster
             String productDate = null;
-            if (collection.equals("Sentinel2")) {
+            if (collection.equals("SENTINEL-2")) {
                 productDate = productId.substring(11, 19);
-            } else if (collection.equals("Sentinel1")) {
+            } else if (collection.equals("SENTINEL-1")) {
                 String[] parts = productId.split("_");
                 if (parts.length > 5 && parts[4].length() == 15) {
                     productDate = parts[4].substring(0, 8);
@@ -233,6 +243,7 @@ public class CreodiasHttpDownloader implements Downloader {
                 // Sentinel1 search without .SAFE returns multiple features
                 // for some images
                 productId += ".SAFE";
+                productIdFilter = " and contains(Name,'"+productId+"')";
             }
             if (productDate != null) {
                 SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMdd");
@@ -248,16 +259,24 @@ public class CreodiasHttpDownloader implements Downloader {
                     String startDate = sdfOut.format(d);
                     String completionDate = sdfOut.format(cal.getTime());
 
-                    return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
-                            .addPathSegments("api/collections")
-                            .addPathSegment(collection)
-                            .addPathSegment("search.json")
-                            .addQueryParameter("maxRecords", "1")
-                            .addQueryParameter("productIdentifier", "%" + productId + "%")
-                            .addQueryParameter("status", "all")
-                            .addQueryParameter("startDate", startDate)
-                            .addQueryParameter("completionDate", completionDate)
-                            .build();
+                    String filter = "Collection/Name eq '" + collection + "'";
+                    filter += productIdFilter;
+                    filter += " and ContentDate/Start ge " + startDate;
+                    filter += " and ContentDate/Start le " + completionDate;
+                    HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder().addPathSegments("odata/v1/Products");
+                    httpUrlBuilder.addQueryParameter("$filter", filter);
+                    return httpUrlBuilder.build();
+
+//                    return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
+//                            .addPathSegments("api/collections")
+//                            .addPathSegment(collection)
+//                            .addPathSegment("search.json")
+//                            .addQueryParameter("maxRecords", "1")
+//                            .addQueryParameter("productIdentifier", "%" + productId + "%")
+//                            .addQueryParameter("status", "all")
+//                            .addQueryParameter("startDate", startDate)
+//                            .addQueryParameter("completionDate", completionDate)
+//                            .build();
                 } catch (ParseException pe) {
                     LOG.error("Failed to parse date from: {}", productDate);
                 }
@@ -265,14 +284,19 @@ public class CreodiasHttpDownloader implements Downloader {
                 LOG.error("Failed to parse date from: {}", productId);
             }
         }
-        return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
-                .addPathSegments("api/collections")
-                .addPathSegment(collection)
-                .addPathSegment("search.json")
-                .addQueryParameter("maxRecords", "1")
-                .addQueryParameter("productIdentifier", "%" + productId + "%")
-                .addQueryParameter("status", "all")
-                .build();
+        String filter = "Collection/Name eq '" + collection + "'";
+        filter += productIdFilter;
+        HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder().addPathSegments("odata/v1/Products");
+        httpUrlBuilder.addQueryParameter("$filter", filter);
+        return httpUrlBuilder.build();
+//        return HttpUrl.parse(properties.getCreodiasSearchUrl()).newBuilder()
+//                .addPathSegments("api/collections")
+//                .addPathSegment(collection)
+//                .addPathSegment("search.json")
+//                .addQueryParameter("maxRecords", "1")
+//                .addQueryParameter("productIdentifier", "%" + productId + "%")
+//                .addQueryParameter("status", "all")
+//                .build();
     }
 
     @Value
