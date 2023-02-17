@@ -382,7 +382,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         String filter = "Collection/Name eq '" + collectionName + "'";
 
         Map<String, String> queryParams = getQueryParameters(parameters);
-        LOG.info(queryParams);
+        //LOG.info(queryParams);
 
         if (queryParams.containsKey("productIdentifier")) {
             filter += " and contains(Name,'" + queryParams.get("productIdentifier") + "')";
