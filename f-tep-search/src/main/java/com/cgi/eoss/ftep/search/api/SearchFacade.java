@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import lombok.extern.log4j.Log4j2;
-import okhttp3.HttpUrl;
 import org.geojson.Feature;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
@@ -21,10 +20,16 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -113,14 +118,16 @@ public class SearchFacade {
                     .replace(".SAFE", "")
                     .replace(".zip", "");
 
+            Map<String,String> constraints = getTimeConstraints(uri.getScheme(), identifier);
+            constraints.put("catalogue", "SATELLITE");
+            constraints.put("mission", uri.getScheme());
+            constraints.put("identifier", identifier);
             SearchParameters searchParameters = new SearchParameters();
             searchParameters.setRequestUrl(SearchParameters.DEFAULT_REQUEST_URL);
             searchParameters.setParameters(ImmutableListMultimap.<String, String>builder()
-                    .put("catalogue", "SATELLITE")
-                    .put("mission", uri.getScheme())
-                    .put("identifier", identifier)
+                    .putAll(constraints.entrySet())
                     .build());
-
+            
             List<Feature> features = search(searchParameters).getFeatures();
 
             if (features.size() != 1) {
@@ -135,4 +142,42 @@ public class SearchFacade {
         }
     }
 
+    private Map<String,String> getTimeConstraints(String mission, String productId) {
+        Map<String,String> constraints = new HashMap<>();
+        if (mission.equals("sentinel2") || mission.equals("sentinel1")) {
+            // Limit the query by product date to make it faster
+            String productDate = null;
+            if (mission.equals("sentinel2")) {
+                productDate = productId.substring(11, 19);
+            } else if (mission.equals("sentinel1")) {
+                String[] parts = productId.split("_");
+                if (parts.length > 5 && parts[4].length() == 15) {
+                    productDate = parts[4].substring(0, 8);
+                }
+            }
+            if (productDate != null) {
+                SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMdd");
+                sdfIn.setTimeZone(TimeZone.getTimeZone("UTC"));
+                SimpleDateFormat sdfOut = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+                sdfOut.setTimeZone(TimeZone.getTimeZone("UTC"));
+                try {
+                    Date d = sdfIn.parse(productDate);
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(d);
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
+
+                    String startDate = sdfOut.format(d);
+                    String completionDate = sdfOut.format(cal.getTime());
+
+                    constraints.put("productDateStart", startDate);
+                    constraints.put("productDateEnd", completionDate);
+                } catch (ParseException pe) {
+                    LOG.error("Failed to parse date from: {}", productDate);
+                }
+            } else {
+                LOG.error("Failed to parse date from: {}", productId);
+            }
+        }
+        return constraints;
+    }
 }

@@ -53,10 +53,10 @@ public class IoConfigurationProperties {
 
         @Data
         static class CreodiasHttp {
-            private String searchUrl = "https://finder.creodias.eu/resto/";
-            private String downloadUrlBase = "https://zipper.creodias.eu/download/";
+            private String searchUrl = "https://datahub.creodias.eu/";
+            private String downloadUrlBase = "https://datahub.creodias.eu/";
             private String orderUrl = "https://finder.creodias.eu/api/order/";
-            private String authEndpoint = "https://auth.creodias.eu/auth/realms/DIAS/protocol/openid-connect/token";
+            private String authEndpoint = "https://identity.cloudferro.com/auth/realms/dias/protocol/openid-connect/token";
             private String authClientId = "CLOUDFERRO_PUBLIC";
             private int overallPriority = 0;
             private int downloadTimeout = 180;

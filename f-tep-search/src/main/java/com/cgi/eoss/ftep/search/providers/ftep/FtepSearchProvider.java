@@ -179,6 +179,19 @@ public class FtepSearchProvider extends RestoSearchProvider {
                         if (wmsLink != null) {
                             featureLinks.add(new Link(wmsLink.toString(), "wms"));
                         }
+                    } else {
+                        // Hide sensitive information of data that cannot be used
+                        ftepUri = new URI("");
+                        filesize = 0L;
+                        featureLinks.clear();
+                        f.getProperties().put("productIdentifier", "");
+                        f.getProperties().put("title", "");
+                        if (f.getProperties().containsKey("owner")) {
+                            f.getProperties().put("owner", "");
+                        } else if (f.getProperties().containsKey("jobOwner")) {
+                            f.getProperties().put("jobOwner", "");
+                        }
+                        f.getProperties().put("filename", "");
                     }
                 } else {
                     LOG.debug("No FtepFile found for search result with ID: {}", f.getId());
