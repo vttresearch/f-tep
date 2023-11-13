@@ -6,11 +6,14 @@ import com.cgi.eoss.ftep.model.Group;
 import com.cgi.eoss.ftep.model.Role;
 import com.cgi.eoss.ftep.model.User;
 import com.cgi.eoss.ftep.persistence.service.PublishingRequestDataService;
+import com.cgi.eoss.ftep.persistence.service.SubscriptionDataService;
 import com.cgi.eoss.ftep.persistence.service.UserDataService;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,17 +69,20 @@ public class FtepSecurityService {
     private final AclPermissionEvaluator aclPermissionEvaluator;
     private final UserDataService userDataService;
     private final PublishingRequestDataService publishingRequestDataService;
+    private final SubscriptionDataService subscriptionDataService;
 
     private final Cache<FtepAccessKey, FtepAccess> ftepAccessCache = CacheBuilder.newBuilder()
             .concurrencyLevel(1)
             .expireAfterAccess(10, TimeUnit.SECONDS).build();
 
     @Autowired
-    public FtepSecurityService(MutableAclService aclService, AclPermissionEvaluator aclPermissionEvaluator, UserDataService userDataService, PublishingRequestDataService publishingRequestDataService) {
+    public FtepSecurityService(MutableAclService aclService, AclPermissionEvaluator aclPermissionEvaluator, UserDataService userDataService, PublishingRequestDataService publishingRequestDataService,
+            SubscriptionDataService subscriptionDataService) {
         this.aclService = aclService;
         this.aclPermissionEvaluator = aclPermissionEvaluator;
         this.userDataService = userDataService;
         this.publishingRequestDataService = publishingRequestDataService;
+        this.subscriptionDataService = subscriptionDataService;
     }
 
     public void updateOwnerWithCurrentUser(FtepEntityWithOwner entity) {
@@ -359,7 +365,9 @@ public class FtepSecurityService {
     public boolean isSubscribed() {
         User currentUser = getCurrentUser();
         try {
-            return currentUser.getRole().equals(Role.ADMIN) || currentUser.getWallet().getBalance() > 0;
+            LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+            return currentUser.getRole().equals(Role.ADMIN) || 
+                    subscriptionDataService.findByOwner(currentUser).stream().anyMatch(subscription -> subscription.isActive(currentTime));
         } catch (Exception e) {
             return false;
         }
