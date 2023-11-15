@@ -51,7 +51,8 @@ define([
         'MAPBOX_SATELLITE_STREETS_URL': "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token=" + ftepConfig.mapboxToken,
         'MAPBOX_SATELLITE_URL': "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=" + ftepConfig.mapboxToken,
         'MAPBOX_STREETS_URL': "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=" + ftepConfig.mapboxToken,
-        'MAPBOX_TERRAIN_URL': "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=" + ftepConfig.mapboxToken
+        'MAPBOX_TERRAIN_URL': "https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=" + ftepConfig.mapboxToken,
+		'SENTINEL_2_GRID_URL': "https://api.mapbox.com/styles/v1/ftep/cl8yozai4006614nrof43ofon/tiles/{z}/{x}/{y}?access_token=" + ftepConfig.mapboxToken
     });
     /* jshint +W117 */
 
@@ -87,22 +88,11 @@ define([
                 controller: 'FilesCtrl',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-						UserService.getActiveSubscription().then(function(subscription){
-							// Active subscription
-						}, function(error) {
-							// No subscription, redirect to homepage
-							// Exception: Admin users no dot need a subscription
-							UserService.getCurrentUser().then(function(user) {
-								if(user.role !== 'ADMIN'){
-									$location.path('/');  //redirect to homepage
-								}
-							});							
-						});
-                        //UserService.getCurrentUserWallet().then(function(wallet) {
-                        //    if (wallet.balance <= 0) {
-                        //        $location.path('/');  //if not subscribed, redirect to homepage
-                        //    }
-                        //});
+                        UserService.getCurrentUserWallet().then(function(wallet) {
+                            if (wallet.balance <= 0) {
+                                $location.path('/');  //if not subscribed, redirect to homepage
+                            }
+                        });
                     }]
                 }
             })
@@ -110,22 +100,11 @@ define([
                 templateUrl: 'views/developer/developer.html',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-						UserService.getActiveSubscription().then(function(subscription){
-							// Active subscription
-						}, function(error) {
-							// No subscription, redirect to homepage
-							// Exception: Admin users no dot need a subscription
-							UserService.getCurrentUser().then(function(user) {
-								if(user.role !== 'ADMIN'){
-									$location.path('/');  //redirect to homepage
-								}
-							});							
-						});
-                        //UserService.getCurrentUserWallet().then(function(wallet) {
-                        //    if (wallet.balance <= 0) {
-                        //        $location.path('/');  //if not subscribed, redirect to homepage
-                        //    }
-                        //});
+                        UserService.getCurrentUserWallet().then(function(wallet) {
+                            if (wallet.balance <= 0) {
+                                $location.path('/');  //if not subscribed, redirect to homepage
+                            }
+                        });
                     }]
                 }
             })
@@ -134,22 +113,11 @@ define([
                 controller: 'CommunityCtrl',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-						UserService.getActiveSubscription().then(function(subscription){
-							// Active subscription
-						}, function(error) {
-							// No subscription, redirect to homepage
-							// Exception: Admin users no dot need a subscription
-							UserService.getCurrentUser().then(function(user) {
-								if(user.role !== 'ADMIN'){
-									$location.path('/');  //redirect to homepage
-								}
-							});							
-						});
-                        //UserService.getCurrentUserWallet().then(function(wallet) {
-                        //    if (wallet.balance <= 0) {
-                        //        $location.path('/');  //if not subscribed, redirect to homepage
-                        //    }
-                        //});
+                        UserService.getCurrentUserWallet().then(function(wallet) {
+                            if (wallet.balance <= 0) {
+                                $location.path('/');  //if not subscribed, redirect to homepage
+                            }
+                        });
                     }]
                 }
             })
@@ -157,22 +125,11 @@ define([
                 templateUrl: 'views/account/account.html',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-						UserService.getActiveSubscription().then(function(subscription){
-							// Active subscription
-						}, function(error) {
-							// No subscription, redirect to homepage
-							// Exception: Admin users no dot need a subscription
-							UserService.getCurrentUser().then(function(user) {
-								if(user.role !== 'ADMIN'){
-									$location.path('/');  //redirect to homepage
-								}
-							});							
-						});
-                        //UserService.getCurrentUserWallet().then(function(wallet) {
-                        //    if (wallet.balance <= 0) {
-                        //        $location.path('/');  //if not subscribed, redirect to homepage
-                        //    }
-                        //});
+                        UserService.getCurrentUserWallet().then(function(wallet) {
+                            if (wallet.balance <= 0) {
+                                $location.path('/');  //if not subscribed, redirect to homepage
+                            }
+                        });
                     }]
                 }
             })
