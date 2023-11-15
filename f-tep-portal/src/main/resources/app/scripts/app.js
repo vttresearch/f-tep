@@ -88,11 +88,22 @@ define([
                 controller: 'FilesCtrl',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-                        UserService.getCurrentUserWallet().then(function(wallet) {
-                            if (wallet.balance <= 0) {
-                                $location.path('/');  //if not subscribed, redirect to homepage
-                            }
-                        });
+						UserService.getActiveSubscription().then(function(subscription){
+							// Active subscription
+						}, function(error) {
+							// No subscription, redirect to homepage
+							// Exception: Admin users no dot need a subscription
+							UserService.getCurrentUser().then(function(user) {
+								if(user.role !== 'ADMIN'){
+									$location.path('/');  //redirect to homepage
+								}
+							});							
+						});
+                        //UserService.getCurrentUserWallet().then(function(wallet) {
+                        //    if (wallet.balance <= 0) {
+                        //        $location.path('/');  //if not subscribed, redirect to homepage
+                        //    }
+                        //});
                     }]
                 }
             })
@@ -100,11 +111,22 @@ define([
                 templateUrl: 'views/developer/developer.html',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-                        UserService.getCurrentUserWallet().then(function(wallet) {
-                            if (wallet.balance <= 0) {
-                                $location.path('/');  //if not subscribed, redirect to homepage
-                            }
-                        });
+						UserService.getActiveSubscription().then(function(subscription){
+							// Active subscription
+						}, function(error) {
+							// No subscription, redirect to homepage
+							// Exception: Admin users no dot need a subscription
+							UserService.getCurrentUser().then(function(user) {
+								if(user.role !== 'ADMIN'){
+									$location.path('/');  //redirect to homepage
+								}
+							});							
+						});
+                        //UserService.getCurrentUserWallet().then(function(wallet) {
+                        //    if (wallet.balance <= 0) {
+                        //        $location.path('/');  //if not subscribed, redirect to homepage
+                        //    }
+                        //});
                     }]
                 }
             })
@@ -113,11 +135,22 @@ define([
                 controller: 'CommunityCtrl',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-                        UserService.getCurrentUserWallet().then(function(wallet) {
-                            if (wallet.balance <= 0) {
-                                $location.path('/');  //if not subscribed, redirect to homepage
-                            }
-                        });
+						UserService.getActiveSubscription().then(function(subscription){
+							// Active subscription
+						}, function(error) {
+							// No subscription, redirect to homepage
+							// Exception: Admin users no dot need a subscription
+							UserService.getCurrentUser().then(function(user) {
+								if(user.role !== 'ADMIN'){
+									$location.path('/');  //redirect to homepage
+								}
+							});							
+						});
+                        //UserService.getCurrentUserWallet().then(function(wallet) {
+                        //    if (wallet.balance <= 0) {
+                        //        $location.path('/');  //if not subscribed, redirect to homepage
+                        //    }
+                        //});
                     }]
                 }
             })
@@ -125,11 +158,22 @@ define([
                 templateUrl: 'views/account/account.html',
                 resolve: {
                     "check": ['$location', 'UserService', function($location, UserService) {
-                        UserService.getCurrentUserWallet().then(function(wallet) {
-                            if (wallet.balance <= 0) {
-                                $location.path('/');  //if not subscribed, redirect to homepage
-                            }
-                        });
+						UserService.getActiveSubscription().then(function(subscription){
+							// Active subscription
+						}, function(error) {
+							// No subscription, redirect to homepage
+							// Exception: Admin users no dot need a subscription
+							UserService.getCurrentUser().then(function(user) {
+								if(user.role !== 'ADMIN'){
+									$location.path('/');  //redirect to homepage
+								}
+							});							
+						});
+                        //UserService.getCurrentUserWallet().then(function(wallet) {
+                        //    if (wallet.balance <= 0) {
+                        //        $location.path('/');  //if not subscribed, redirect to homepage
+                        //    }
+                        //});
                     }]
                 }
             })
