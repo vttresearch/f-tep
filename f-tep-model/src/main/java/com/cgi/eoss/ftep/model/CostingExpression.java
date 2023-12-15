@@ -49,10 +49,16 @@ public class CostingExpression implements FtepEntity<CostingExpression> {
     private Long associatedId;
 
     /**
-     * <p>Expression to be evaluated when calculating the cost of the associated entity.</p>
+     * <p>Expression to be evaluated when calculating the cost of the associated entity before the service is run.</p>
      */
     @Column(name = "cost_expression", nullable = false)
     private String costExpression;
+
+    /**
+     * <p>Expression to be evaluated when calculating the cost of the associated entity after the service has been run.</p>
+     */
+    @Column(name = "post_cost_expression")
+    private String postCostExpression;
 
     /**
      * <p>Expression to be evaluated when projecting the estimated cost of the associated entity. If null, the costing
@@ -64,11 +70,12 @@ public class CostingExpression implements FtepEntity<CostingExpression> {
     private String estimatedCostExpression;
 
     @Builder
-    public CostingExpression(Type type, Long associatedId, String costExpression, String estimatedCostExpression) {
+    public CostingExpression(Type type, Long associatedId, String costExpression, String estimatedCostExpression, String postCostExpression) {
         this.type = type;
         this.associatedId = associatedId;
         this.costExpression = costExpression;
         this.estimatedCostExpression = estimatedCostExpression;
+        this.postCostExpression = postCostExpression;
     }
 
     @Override

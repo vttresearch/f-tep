@@ -22,6 +22,9 @@
         <md-menu-item ng-class="{'active': mapstore.type.active == 'Open Street'}">
             <md-button ng-click="setMapType('OSM')" aria-label="OpenStreetMap">OpenStreetMap</md-button>
         </md-menu-item>
+        <md-menu-item ng-class="{'active': mapstore.type.active == 'S2Grid'}">
+            <md-button ng-click="setMapType('S2')" aria-label="Sentinel-2 grid">Sentinel-2 grid</md-button>
+        </md-menu-item>
     </md-menu-content>
 </md-menu>
 

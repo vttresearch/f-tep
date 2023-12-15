@@ -420,6 +420,8 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         }
         httpUrl.addQueryParameter("$filter", filter);
 
+        httpUrl.addQueryParameter("$orderby", "ContentDate/Start desc");
+
         Request request = new Request.Builder().url(httpUrl.build()).get().build();
 
         LOG.debug("Performing HTTP request for OData search: {}", httpUrl);
