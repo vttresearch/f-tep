@@ -56,7 +56,7 @@
                     <!-- An input that accepts multiple values and supports data reference -->
                     <input ng-if="!fieldDesc.defaultAttrs.allowedValues && fieldDesc.dataReference"
                            id="{{ fieldDesc.id }}" name="{{ fieldDesc.id }}"
-                           ng-model="serviceParams.inputVal"
+                           ng-model="serviceParams.inputVal[fieldDesc.id]"
                            ng-init="serviceParams.config.inputValues[fieldDesc.id] = getDefaultValue(fieldDesc)"
                            type="{{fieldDesc.defaultAttrs.dataType}}"
                            aria-label="{{fieldDesc.id}}"
@@ -67,14 +67,14 @@
                     <input ng-if="!fieldDesc.defaultAttrs.allowedValues && !fieldDesc.dataReference"
                            id="{{ fieldDesc.id }}" name="{{ fieldDesc.id }}"
                            ng-init="serviceParams.config.inputValues[fieldDesc.id] = getDefaultValue(fieldDesc)"
-                           ng-model="serviceParams.inputVal"
+                           ng-model="serviceParams.inputVal[fieldDesc.id]"
                            type="{{fieldDesc.defaultAttrs.dataType}}"
                            aria-label="{{fieldDesc.id}}">
 
                     <!-- A select that accepts multiple selections -->
                     <md-select ng-if="fieldDesc.defaultAttrs.allowedValues"
-                               ng-model="serviceParams.inputVal"
-                               ng-init="serviceParams.inputVal = getDefaultValue(fieldDesc).toString()"
+                               ng-model="serviceParams.inputVal[fieldDesc.id]"
+                               ng-init="serviceParams.inputVal[fieldDesc.id] = getDefaultValue(fieldDesc).toString()"
                                default-attrs="{{fieldDesc.defaultAttrs}}"
                                description="{{fieldDesc.description}}"
                                aria-label="{{fieldDesc.id}}">
@@ -86,7 +86,7 @@
                     <!-- Button to add the selected input/select value to the request -->
                     <md-icon style="display:inline-block;">
                         <md-button class="toolbar-button md-secondary add-input-value-button"
-                                   ng-click="addItem(fieldDesc.id, serviceParams.inputVal); serviceParams.inputVal = null">
+                                   ng-click="addItem(fieldDesc.id, serviceParams.inputVal[fieldDesc.id]); serviceParams.inputVal[fieldDesc.id] = null">
                             <!-- Add this code to disable the add button when the max occurs limit has been reached -->
                             <!--ng-disabled="fieldDesc.maxOccurs <= serviceParams.config.inputValues[fieldDesc.id].length"-->
                             <!--uib-tooltip="{{fieldDesc.maxOccurs <= serviceParams.config.inputValues[fieldDesc.id].length ? 'Maximum Inputs Added' : 'Add to list' }}"-->

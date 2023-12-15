@@ -267,17 +267,25 @@ define(['../../../ftepmodules'], function (ftepmodules) {
                     JobService.createJobConfig(jobParams).then(function(jobConfig) {
                         JobService.estimateJob(jobConfig, $event).then(function(estimation) {
                             var currency = estimation.estimatedCost === 1 ? 'coin' : 'coins';
-                            CommonService.confirm($event, 'This job will cost ' + estimation.estimatedCost + ' ' + currency + '.' +
-                                '\nAre you sure you want to continue?').then(function (confirmed) {
-                                if (confirmed === false) {
-                                    return;
-                                }
-                                JobService.broadcastNewjob();
-                                $scope.displayTab($scope.bottomNavTabs.JOBS);
-                                JobService.launchJob(jobConfig, $scope.serviceParams.selectedService).then(function () {
-                                    JobService.refreshJobs('explorer', 'Create');
-                                });
-                            });
+							if (estimation.estimatedCost > 0) {
+								CommonService.confirm($event, 'This job will cost ' + estimation.estimatedCost + ' ' + currency + '.' +
+									'\nAre you sure you want to continue?').then(function (confirmed) {
+									if (confirmed === false) {
+										return;
+									}
+									JobService.broadcastNewjob();
+									$scope.displayTab($scope.bottomNavTabs.JOBS);
+									JobService.launchJob(jobConfig, $scope.serviceParams.selectedService).then(function () {
+										JobService.refreshJobs('explorer', 'Create');
+									});
+								});
+							} else {
+								JobService.broadcastNewjob();
+								$scope.displayTab($scope.bottomNavTabs.JOBS);
+								JobService.launchJob(jobConfig, $scope.serviceParams.selectedService).then(function () {
+									JobService.refreshJobs('explorer', 'Create');
+								});
+							}
                         },
                         function (error) {
                             if (error && error.estimatedCost) {

@@ -125,6 +125,13 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
             })
         });
 
+        var layerS2 = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                tileSize: [512, 512],
+                url: ftepProperties.SENTINEL_2_GRID_URL
+            })
+        });
+
         /* Set active layer on map load */
 
         if ($scope.mapstore.type.active === "Satellite Street") {
@@ -137,6 +144,8 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
             $scope.activelayer = layerTM;
         } else if ($scope.mapstore.type.active === "Open Street") {
             $scope.activelayer = layerOSM;
+        } else if ($scope.mapstore.type.active === "S2Grid") {
+            $scope.activelayer = layerS2;
         }
 
         /** ----- END OF MAP LAYER TYPES ----- **/
@@ -304,7 +313,7 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
         addInteraction();
 
         $scope.removeRedundantLayers = function(newLayer) {
-            var layers = [layerSatSM, layerSatM, layerSM, layerTM, layerOSM];
+            var layers = [layerSatSM, layerSatM, layerSM, layerTM, layerOSM, layerS2];
             layers.filter(layer => layer != newLayer).forEach(layer => $scope.map.removeLayer(layer));
         };
 
@@ -329,6 +338,10 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
                 $scope.removeRedundantLayers(layerOSM);
                 $scope.map.getLayers().insertAt(0, layerOSM);
                 $scope.mapstore.type.active = "Open Street";
+            } else if (newType === 'S2' && $scope.mapstore.type.active !== "S2Grid") {
+                $scope.removeRedundantLayers(layerS2);
+                $scope.map.getLayers().insertAt(0, layerS2);
+                $scope.mapstore.type.active = "S2Grid";
             }
         };
         /** ----- END OF MAP CONFIG & DRAW INTERACTION ----- **/

@@ -244,7 +244,8 @@ CREATE TABLE ftep_costing_expressions (
   type                      CHARACTER VARYING(255) NOT NULL CHECK (type IN ('SERVICE', 'DOWNLOAD')),
   associated_id             BIGINT                 NOT NULL,
   cost_expression           CHARACTER VARYING(255) NOT NULL,
-  estimated_cost_expression CHARACTER VARYING(255)
+  estimated_cost_expression CHARACTER VARYING(255),
+  post_cost_expression CHARACTER VARYING(255)
 );
 CREATE UNIQUE INDEX ftep_costing_expressions_type_associated_id_idx
   ON ftep_costing_expressions (type, associated_id);

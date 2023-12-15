@@ -20,5 +20,6 @@ public interface CostingService {
     public Integer estimateDownloadCost(FtepFile download);
 
     public void chargeForJob(Wallet wallet, Job job);
+    public void postChargeForJob(Wallet wallet, Job job);
     public void chargeForDownload(Wallet wallet, FtepFile download);
 }
