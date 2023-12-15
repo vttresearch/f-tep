@@ -138,15 +138,40 @@ public class CostingServiceImpl implements CostingService {
             String expression = costingExpression.getCostExpression();
             cost = ((Number) expressionParser.parseExpression(expression).getValue(job)).intValue();
         }
+        if (cost != 0) {
+            WalletTransaction walletTransaction = WalletTransaction.builder()
+                    .wallet(walletDataService.refreshFull(wallet))
+                    .balanceChange(-cost)
+                    .type(WalletTransaction.Type.JOB)
+                    .associatedId(job.getId())
+                    .transactionTime(LocalDateTime.now(ZoneOffset.UTC))
+                    .build();
+            walletDataService.transact(walletTransaction);
+        }
+    }
 
-        WalletTransaction walletTransaction = WalletTransaction.builder()
-                .wallet(walletDataService.refreshFull(wallet))
-                .balanceChange(-cost)
-                .type(WalletTransaction.Type.JOB)
-                .associatedId(job.getId())
-                .transactionTime(LocalDateTime.now(ZoneOffset.UTC))
-                .build();
-        walletDataService.transact(walletTransaction);
+    @Override
+    @Transactional
+    public void postChargeForJob(Wallet wallet, Job job) {
+        int cost = 0;
+        if (!coinsDisabled) {
+            CostingExpression costingExpression = getCostingExpression(job.getConfig().getService());
+            String expression = costingExpression.getPostCostExpression();
+            if (!Strings.isNullOrEmpty(expression)) {
+                cost = ((Number) expressionParser.parseExpression(expression).getValue(job)).intValue();
+            }
+        }
+
+        if (cost != 0) {
+            WalletTransaction walletTransaction = WalletTransaction.builder()
+                    .wallet(walletDataService.refreshFull(wallet))
+                    .balanceChange(-cost)
+                    .type(WalletTransaction.Type.JOB)
+                    .associatedId(job.getId())
+                    .transactionTime(LocalDateTime.now(ZoneOffset.UTC))
+                    .build();
+            walletDataService.transact(walletTransaction);
+        }
     }
 
     @Override

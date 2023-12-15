@@ -146,4 +146,45 @@ public class JobConfig implements FtepEntityWithOwner<JobConfig>, FtepFileRefere
     public Boolean removeReferenceToFtepFile(FtepFile file) {
         return this.inputFiles.remove(file);
     }
+
+    /**
+     * Calculate difference in days between two job input parameters.
+     * The parameters have to be in format yyyy-mm-dd.
+     * 
+     * @param param1
+     * @param param2
+     * @return 
+     * @throws CostingExpressionException if evaluation fails
+     */
+    public int dayDifference(String param1, String param2) throws CostingExpressionException {
+        String s1 = null;
+        if (this.inputs.containsKey(param1)) {
+            java.util.Collection<String> value = this.inputs.get(param1);
+            if (value != null && value.size() == 1) {
+                s1 = (String) value.toArray()[0];
+            }
+        }
+        String s2 = null;
+        if (this.inputs.containsKey(param2)) {
+            java.util.Collection<String> value = this.inputs.get(param2);
+            if (value != null && value.size() == 1) {
+                s2 = (String) value.toArray()[0];
+            }
+        }
+        if (s1 != null && s2 != null) {
+            java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            try {
+                java.time.LocalDateTime d1 = java.time.LocalDateTime.parse(s1 + " 00:00:00", dtf);
+                java.time.LocalDateTime d2 = java.time.LocalDateTime.parse(s2 + " 00:00:00", dtf);
+                if (d1.isBefore(d2)) {
+                    return (int)java.time.Duration.between(d1, d2).toDays();
+                } else {
+                    return (int)java.time.Duration.between(d2, d1).toDays();
+                }
+            } catch (Exception e) {
+                throw new CostingExpressionException("Cost expression evaluation failed", e);
+            }
+        }
+        throw new CostingExpressionException("Cost expression evaluation failed");
+    }
 }

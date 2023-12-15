@@ -2,6 +2,7 @@ package com.cgi.eoss.ftep.orchestrator.service;
 
 import com.cgi.eoss.ftep.catalogue.geoserver.GeoServerSpec;
 import com.cgi.eoss.ftep.catalogue.util.GeoUtil;
+import com.cgi.eoss.ftep.costing.CostingService;
 import com.cgi.eoss.ftep.logging.Logging;
 import com.cgi.eoss.ftep.model.FtepFile;
 import com.cgi.eoss.ftep.model.FtepService;
@@ -95,6 +96,7 @@ public class FtepOrchestratorService {
     private final WorkerFactory workerFactory;
     private final FtepFileRegistrar ftepFileRegistrar;
     private final PlatformTransactionManager platformTransactionManager;
+    private final CostingService costingService;
 
     @Autowired
     public FtepOrchestratorService(ServiceDataService serviceDataService,
@@ -102,13 +104,15 @@ public class FtepOrchestratorService {
                                    GuiUrlService guiUrlService,
                                    WorkerFactory workerFactory,
                                    FtepFileRegistrar ftepFileRegistrar,
-                                   PlatformTransactionManager platformTransactionManager) {
+                                   PlatformTransactionManager platformTransactionManager,
+                                   CostingService costingService) {
         this.serviceDataService = serviceDataService;
         this.jobDataService = jobDataService;
         this.guiUrlService = guiUrlService;
         this.workerFactory = workerFactory;
         this.ftepFileRegistrar = ftepFileRegistrar;
         this.platformTransactionManager = platformTransactionManager;
+        this.costingService = costingService;
     }
 
     @Transactional
@@ -249,6 +253,9 @@ public class FtepOrchestratorService {
         job.setOutputFiles(new HashSet<>(outputFiles.values()));
         jobDataService.save(job);
 
+        // Fix job cost (if specified)
+        costingService.postChargeForJob(job.getOwner().getWallet(), job);
+        
         Job parentJob = job.getParentJob();
         if (parentJob != null) {
             completeParentJob(parentJob);

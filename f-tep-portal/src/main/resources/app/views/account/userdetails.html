@@ -22,7 +22,7 @@
                     <div class="col-md-8">{{user.email}}</div>
                 </div>
                 <div class="row" ng-hide="coinsDisabled">
-                    <b class="col-md-4">Coin Balance:</b>
+                    <b class="col-md-4">Sen2Like Coin Balance:</b>
                     <div class="col-md-8">{{walletParams.wallet.balance}}</div>
                 </div>
             </md-card-content>
@@ -75,7 +75,7 @@
             </md-card-title>
         </md-card>
 
-        <md-card class="transaction ftep-card" md-theme-watch ng-repeat="transaction in walletParams.transactions | orderBy : '-id' ">
+        <md-card class="transaction ftep-card" md-theme-watch ng-repeat="transaction in walletParams.transactions | orderBy : '-id' " ng-if="transaction.balanceChange != 0">
             <md-card-content>
                 <p><b ng-bind="'Balance ' + (transaction.balanceChange > 0 ? 'Credit' : 'Debit') + ':'"></b> {{transaction.balanceChange}}</p>
                 <p ng-if="transaction.type == 'JOB'"><b>Associated Job ID:</b> {{transaction.associatedId}}</p>
