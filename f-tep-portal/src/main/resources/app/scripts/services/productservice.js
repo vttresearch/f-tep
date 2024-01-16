@@ -338,7 +338,8 @@ define(['../ftepmodules', 'traversonHal', '../vendor/handlebars/handlebars'], fu
                         serviceProvider: name,
                         version: '0.1',
                         serviceType: 'Java'
-                    }
+                    },
+					mountEodata: true
                 };
                 halAPI.from(rootUri + '/services/')
                     .newRequest()
