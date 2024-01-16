@@ -77,7 +77,7 @@ allprojects {
     extra.set("protobuf-java.version", "3.7.1")
     extra.set("protoc.version", "3.7.1")
     extra.set("querydsl.version", "4.2.1")
-    extra.set("sshj.version", "0.23.0")
+    extra.set("sshj.version", "0.30.0")
 
     apply(plugin = "io.spring.dependency-management")
 
