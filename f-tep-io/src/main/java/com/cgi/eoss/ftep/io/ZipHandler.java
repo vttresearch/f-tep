@@ -96,11 +96,16 @@ public class ZipHandler {
      */
 
     public static void unzip(Path file, Path targetDir) throws IOException {
-//        if (isFile(file)) {
-//            unzipFile(file, targetDir);
-//        } else {
+        if (isFile(file)) {
+            try {
+                unzipFile(file, targetDir);
+            } catch (Exception e) {
+                LOG.warn("unzipFile failed, trying unzipStreaming", e);
+                unzipStreaming(file, targetDir);
+            }
+        } else {
             unzipStreaming(file, targetDir);
-//        }
+        }
     }
 
     private static Boolean isFile(Path path) {
