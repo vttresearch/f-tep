@@ -52,7 +52,10 @@
 
                 <div class="row service-description">
                     <div class="col-md-12">
-                        <h5 ng-bind="serviceParams.selectedService.serviceDescriptor.description"></h5>
+                        <h5>{{serviceParams.selectedService.serviceDescriptor.description.replace('Read user manual here.','')}}
+                          <span ng-if="serviceParams.selectedService.serviceDescriptor.description.includes('Read user manual here.')">Read user manual
+                            <a href="servicedoc/{{serviceParams.selectedService.name}}.pdf" target="_blank">here</a>.</span>
+                        </h5>
                     </div>
                 </div>
 
