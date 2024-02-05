@@ -76,7 +76,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
             .put("s1ProcessingLevel", "processingLevel")
             .put("s2ProcessingLevel", "processingLevel")
             .put("s3ProcessingLevel", "processingLevel")
-            .put("landsatProcessingLevel", "processingLevel")
+            .put("landsatProcessingLevel", "productType")
             .put("s1ProductType", "productType")
             .put("s1Platform", "platform")
             .put("productDateStart", "startDate")
@@ -87,7 +87,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
     private static final Map<String, Function<String, String>> PARAMETER_VALUE_MAPPING = ImmutableMap.<String, Function<String, String>>builder()
             .put("s1ProcessingLevel", v -> "LEVEL" + v)
             .put("s2ProcessingLevel", v -> "S2MSI" + v)
-            .put("landsatProcessingLevel", v -> "LEVEL" + v)
+            .put("landsatProcessingLevel", v -> { if (v.equals("GTC_1P")) {return v;} else {return "L" + v;} })
             .put("orbitDirection", String::toUpperCase)
             .build();
 
