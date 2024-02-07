@@ -34,8 +34,6 @@ mission:
         title: 'Sentinel-2'
       - value: 'sentinel3'
         title: 'Sentinel-3'
-      - value: 'sentinel5'
-        title: 'Sentinel-5P'
       - value: 'landsat'
         title: 'Landsat'
   onlyIf:
@@ -58,7 +56,7 @@ aoi:
 identifier:
   title: 'Identifier'
   type: 'text'
-  description: 'Product identifier string'
+  description: 'Product identifier string (part of the searched identifier, no wildcards)'
 
 platform:
   title: 'Platform'
@@ -105,9 +103,9 @@ s1ProcessingLevel:
   allowed:
     values:
       - value: '1'
-        title: 'Level 1'
+        title: '1'
       - value: '2'
-        title: 'Level 2'
+        title: '2'
   onlyIf:
     'mission':
       - 'sentinel1'
@@ -135,9 +133,9 @@ s3ProcessingLevel:
   allowed:
     values:
       - value: '1'
-        title: 'Level 1'
+        title: '1'
       - value: '2'
-        title: 'Level 2'
+        title: '2'
   onlyIf:
     'mission':
       - 'sentinel3'
@@ -154,7 +152,6 @@ landsatProcessingLevel:
           'platform':
             - 'Landsat-5'
             - 'Landsat-7'
-            - 'Landsat-8'
       - value: '1T'
         title: '1T'
         onlyIf:
@@ -167,6 +164,21 @@ landsatProcessingLevel:
         onlyIf:
           'platform':
             - 'Landsat-7'
+            - 'Landsat-8'
+      - value: 'GTC_1P'
+        title: 'GTC_1P'
+        onlyIf:
+          'platform':
+            - 'Landsat-7'
+      - value: '1TP'
+        title: '1TP'
+        onlyIf:
+          'platform':
+            - 'Landsat-8'
+      - value: '2SP'
+        title: '2SP'
+        onlyIf:
+          'platform':
             - 'Landsat-8'
   onlyIf:
     'mission':
