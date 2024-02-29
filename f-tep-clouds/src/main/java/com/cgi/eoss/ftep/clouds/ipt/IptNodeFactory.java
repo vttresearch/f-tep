@@ -95,12 +95,14 @@ public class IptNodeFactory implements NodeFactory {
 
     private final KeypairRepository keypairRepository;
 
-    IptNodeFactory(int maxPoolSize, OpenstackAPIs openstackAPIs, ProvisioningConfig provisioningConfig, KeypairRepository keypairRepository) {
+    IptNodeFactory(int maxPoolSize, OpenstackAPIs openstackAPIs, ProvisioningConfig provisioningConfig, KeypairRepository keypairRepository, String osRegion) {
         this.maxPoolSize = maxPoolSize;
 
         NovaApi novaApi = openstackAPIs.getNovaApi();
         NeutronApi neutronApi = openstackAPIs.getNeutronApi();
-        String region = novaApi.getConfiguredRegions().stream().findFirst()
+        String region = novaApi.getConfiguredRegions().stream()
+                .filter(f -> f.equals(osRegion))
+                .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Could not determine OpenStack Nova region"));
 
         this.serverApi = novaApi.getServerApi(region);
