@@ -14,7 +14,7 @@ ENV USER_ID=996
 ENV GROUP_ID=1002
 
 # Gui App Name default is "GUI_APPLICATION"
-ENV APP_NAME SNAP6-Sentinel-Toolbox
+ENV APP_NAME SNAP8-Sentinel-Toolbox
 
 # Default resolution, change if you like
 ENV WIDTH=1280
@@ -41,8 +41,8 @@ CMD ["/sbin/my_init"]
 #RUN apt-get install -y libx11-6 libxext6 libxau6 libxxf86vm1 libxdmcp6 libdrm2 libglu1 libgtk2.0-0
 
 ENV \
-  TBX="esa-snap_sentinel_unix_6_0.sh" \
-  STB_URL="http://step.esa.int/downloads/6.0/installers" 
+  TBX="esa-snap_sentinel_unix_8_0.sh" \
+  STB_URL="http://step.esa.int/downloads/8.0/installers" 
 
 RUN wget $STB_URL/$TBX && chmod +x $TBX
 

@@ -15,7 +15,7 @@
         </sources>
         <parameters class="com.bc.ceres.binding.dom.XppDomElement">
             <selectedPolarisations/>
-            <sourceBands>B2,B3,B4,B8</sourceBands>
+            <sourceBands>B4</sourceBands>
             <bandNamePattern/>
         </parameters>
     </node>
@@ -25,7 +25,7 @@
             <sourceProduct refid="BandSelect"/>
         </sources>
         <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-            <referenceBand>B2</referenceBand>
+            <referenceBand>B4</referenceBand>
             <targetWidth/>
             <targetHeight/>
             <targetResolution/>
