@@ -1,7 +1,7 @@
 ---
 id: "SNAP"
 title: "Start the SNAP Desktop Application"
-description: "The Sentinel Applications Platform v8.0.0 - A GUI created for the processing\
+description: "The Sentinel Applications Platform v9.0.0 - A GUI created for the processing\
   \ and analysis of Sentinel data. A core F-TEP service"
 version: "1.0"
 storeSupported: true

@@ -1,68 +1,68 @@
-# Builds a docker gui image
-FROM hurricane/dockergui:x11rdp1.3
+FROM jlesage/baseimage-gui:ubuntu-20.04
 
-MAINTAINER Rakesh
-
-#########################################
-##        ENVIRONMENTAL CONFIG         ##
-#########################################
-
-# Set environment variables
-
-# User/Group Id gui app will be executed as default are 99 and 100
+ENV APP_NAME="SNAP9-Sentinel-Toolbox"
+ENV DISPLAY_WIDTH=1920
+ENV DISPLAY_HEIGHT=1080
 ENV USER_ID=996
-ENV GROUP_ID=1002
+ENV GROUP_ID=1009
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Gui App Name default is "GUI_APPLICATION"
-ENV APP_NAME SNAP8-Sentinel-Toolbox
+# Install tools
+RUN apt-get update && apt-get install -y\
+ wget\
+ gnupg\
+ zip\
+ libqt5gui5\
+ binutils\
+ software-properties-common\
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Default resolution, change if you like
-ENV WIDTH=1280
-ENV HEIGHT=720
-
-# Use baseimage-docker's init system
-CMD ["/sbin/my_init"]
-
-#########################################
-##    REPOSITORIES AND DEPENDENCIES    ##
-#########################################
-#RUN echo 'deb http://archive.ubuntu.com/ubuntu trusty main universe restricted' > /etc/apt/sources.list
-#RUN echo 'deb http://archive.ubuntu.com/ubuntu trusty-updates main universe restricted' >> /etc/apt/sources.list
-
-# Install packages needed for app
-
-#########################################
-##          GUI APP INSTALL            ##
-#########################################
-
-# Install steps for X app
-#RUN apt-get update
-
-#RUN apt-get install -y libx11-6 libxext6 libxau6 libxxf86vm1 libxdmcp6 libdrm2 libglu1 libgtk2.0-0
+# This fix is needed because F-TEP workers run on Linux Kernel 3.10
+RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
 
 ENV \
-  TBX="esa-snap_sentinel_unix_8_0.sh" \
-  STB_URL="http://step.esa.int/downloads/8.0/installers" 
+  TBX="esa-snap_sentinel_unix_9_0_0.sh" \
+  STB_URL="https://download.esa.int/step/snap/9.0/installers" 
 
+# Install tools
+RUN apt-get update && apt-get install -y\
+ wget\
+ libfreetype6\
+ libxext6\
+ libxrender1\
+ libqt5gui5\
+ zip\
+ binutils\ 
+ software-properties-common\
+ nano\
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Download SNAP installer
 RUN wget $STB_URL/$TBX && chmod +x $TBX
 
-RUN echo -e "deleteAllSnapEngineDir\$Boolean=false\ndeleteOnlySnapDesktopDir\$Boolean=false\nexecuteLauncherWithPythonAction\$Boolean=false\nforcePython\$Boolean=false\npythonExecutable=/usr/bin/python\nsys.adminRights\$Boolean=true\nsys.component.RSTB\$Boolean=true\nsys.component.S1TBX\$Boolean=true\nsys.component.S2TBX\$Boolean=true\nsys.component.S3TBX\$Boolean=true\nsys.component.SNAP\$Boolean=true\nsys.installationDir=/opt/snap\nsys.languageId=en\nsys.programGroupDisabled\$Boolean=false\nsys.symlinkDir=/usr/local/bin" >/tmp/snap.varfile
+# Create installation parameter file
+# Template created by manually running the installer in console mode
+# ./$TBX -c
+# /opt/snap/.install4j/response.varfile
+RUN echo -e "deleteSnapDir=ALL\nexecuteLauncherAction\$Boolean=false\nforcePython\$Boolean=false\nsys.adminRights\$Boolean=true\nsys.component.RSTB\$Boolean=true\nsys.component.S1TBX\$Boolean=true\nsys.component.S2TBX\$Boolean=true\nsys.component.S3TBX\$Boolean=true\nsys.component.SNAP\$Boolean=true\nsys.installationDir=/opt/snap\nsys.languageId=en\nsys.programGroupDisabled\$Boolean=false\nsys.symlinkDir=/usr/local/bin\n" >/tmp/snap.varfile
 
+# Run the installer in unattended mode
 RUN ./$TBX -q -varfile /tmp/snap.varfile
 
-ENV PATH=/opt/snap/bin:$PATH
-
+# Disable update checking
 RUN echo "snap.versionCheck.interval=NEVER" >>/opt/snap/etc/snap.properties \
-  && sed 's/^\(default_options.*\)"/\1 -J-Dplugin.manager.check.interval=NEVER"/' -i /opt/snap/etc/snap.conf
+  && sed 's/^\(default_options.*\)"/\1 -J-Dplugin.manager.check.interval=NEVER -J-Dsnap.home=\/opt\/snap -J-Dsnap.userdir=\/config\/.snap"/' -i /opt/snap/etc/snap.conf
 
-RUN echo -e '#!/bin/sh\n/opt/snap/bin/snap --nosplash --nogui --modules --update-all 2>&1 | while read -r line; do\n    echo "$line"\n    [ "$line" = "updates=0" ] && sleep 2 && pkill -TERM -f "snap/jre/bin/java"\ndone\n' >/opt/snap/bin/update_plugins.sh && chmod +x /opt/snap/bin/update_plugins.sh && /opt/snap/bin/update_plugins.sh
+#RUN echo -e '#!/bin/sh\n/opt/snap/bin/snap --nosplash --nogui --modules --update-all 2>&1 | while read -r line; do\n    echo "$line"\n    [ "$line" = "updates=0" ] && sleep 2 && pkill -TERM -f "snap/jre/bin/java"\ndone\n' >/opt/snap/bin/update_plugins.sh && chmod +x /opt/snap/bin/update_plugins.sh && /opt/snap/bin/update_plugins.sh
+
+# Fix for
+# libGL error: MESA-LOADER: failed to open swrast: /usr/lib/dri/swrast_dri.so: cannot open shared object file: No such file or directory (search paths /usr/lib/x86_64-linux-gnu/dri:\$${ORIGIN}/dri:/usr/lib/dri, suffix _dri)
+# https://forum.step.esa.int/t/snap9-error-libegl-warning-mesa-loader-failed-to-open-swrast/36702/5
+RUN mkdir /usr/lib/dri
+RUN ln -s /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so /usr/lib/dri
 
 # Copy X app start script to right location
 COPY startapp.sh /startapp.sh
 
-#########################################
-##         EXPORTS AND VOLUMES         ##
-#########################################
-EXPOSE 3389 8080
+ENV PATH=/opt/snap/bin:$PATH
 
-# Place whater volumes and ports you want exposed here:
