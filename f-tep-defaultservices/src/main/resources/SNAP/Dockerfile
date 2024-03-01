@@ -7,19 +7,6 @@ ENV USER_ID=996
 ENV GROUP_ID=1009
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install tools
-RUN apt-get update && apt-get install -y\
- wget\
- gnupg\
- zip\
- libqt5gui5\
- binutils\
- software-properties-common\
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# This fix is needed because F-TEP workers run on Linux Kernel 3.10
-RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
-
 ENV \
   TBX="esa-snap_sentinel_unix_9_0_0.sh" \
   STB_URL="https://download.esa.int/step/snap/9.0/installers" 
@@ -34,8 +21,11 @@ RUN apt-get update && apt-get install -y\
  zip\
  binutils\ 
  software-properties-common\
- nano\
+ gdal-bin\
  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# This fix is needed because F-TEP workers run on Linux Kernel 3.10
+RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
 
 # Download SNAP installer
 RUN wget $STB_URL/$TBX && chmod +x $TBX

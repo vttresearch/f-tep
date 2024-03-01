@@ -34,5 +34,9 @@ cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28 /config/.snap/auxdata/gdal/gdal
 # Ensure it has execution bits set
 chmod +x /config/.snap/auxdata/gdal/gdal-3-2-1/lib/libstdc++.so.6
 
+# Disable asking for updates
+mkdir -p /config/.snap/system/config/Preferences/org/esa/snap/snap
+echo optional.version.check.onstartup.decision=no > /config/.snap/system/config/Preferences/org/esa/snap/snap/rcp.properties
+
 cd "${WORKER_DIR}/workDir"
 /opt/snap/bin/snap --open ${INPUT_FILES}
