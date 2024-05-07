@@ -1,7 +1,7 @@
 ---
 id: "LandCoverGeotiff"
-title: "Land cover by random forest"
-description: "Land cover by random forest"
+title: "Calculate land coverage (a forest map) from any GeoTIFF"
+description: "Land cover mapping using GeoTIFF images (e.g. Landsat), with image classification trained by Random Forest model. A core F-TEP service."
 version: "0.1"
 storeSupported: false
 statusSupported: false

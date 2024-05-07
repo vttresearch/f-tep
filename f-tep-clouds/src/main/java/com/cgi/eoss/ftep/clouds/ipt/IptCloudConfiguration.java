@@ -31,6 +31,9 @@ public class IptCloudConfiguration {
     @Value("${ftep.clouds.ipt.os.identityEndpoint}")
     private String osIdentityEndpoint;
 
+    @Value("${ftep.clouds.ipt.os.region}")
+    private String osRegion;
+
     @Value("${ftep.clouds.ipt.os.username}")
     private String osUsername;
 
@@ -157,7 +160,7 @@ public class IptCloudConfiguration {
 
     @Bean
     public IptNodeFactory iptNodeFactory(OpenstackAPIs openstackAPIs) {
-        return new IptNodeFactory(maxPoolSize, openstackAPIs, provisioningConfig(), keypairRepository);
+        return new IptNodeFactory(maxPoolSize, openstackAPIs, provisioningConfig(), keypairRepository, osRegion);
     }
 
 }
