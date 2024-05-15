@@ -91,7 +91,7 @@ public class UsersApiExtension {
                     currentUser.addGroup(group);
                 });
             }
-            currentUser.getWallet().setBalance(1000);
+            //currentUser.getWallet().setBalance(1000);
             userDataService.save(currentUser);
             LOG.info(String.format("User %s (%s) has started a free trial", currentUser.getName(), currentUser.getEmail()));
 
