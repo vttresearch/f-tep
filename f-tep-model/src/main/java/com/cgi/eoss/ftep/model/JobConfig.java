@@ -187,4 +187,21 @@ public class JobConfig implements FtepEntityWithOwner<JobConfig>, FtepFileRefere
         }
         throw new CostingExpressionException("Cost expression evaluation failed");
     }
+
+    /**
+     * Calculate difference in days between two job input parameters.
+     * The parameters have to be in format yyyy-mm-dd.
+     *
+     * @param param1
+     * @param param2
+     * @param scale Scaling factor to be applied to the day difference
+     * @param minimum The minimum value to return regardless of other inputs
+     * @return
+     * @throws CostingExpressionException if evaluation fails
+     */
+    public int scaledDayDifference(String param1, String param2, double scale, int minimum) throws CostingExpressionException {
+        int days = dayDifference(param1, param2);
+        int scaled = (int)Math.ceil(days * scale);
+        return Math.max(scaled, minimum);
+    }
 }

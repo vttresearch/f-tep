@@ -1,8 +1,8 @@
 ---
 id: "LandCoverS2"
-title: "LandCoverS2SingleTile"
+title: "Calculate land coverage (a forest map) from Sentinel-2 data"
 description: "Land cover mapping using Sentinel-2 images, with image classification\
-  \ trained by Random Forest model"
+  \ trained by Random Forest model. A core F-TEP service."
 version: "0.1"
 storeSupported: false
 statusSupported: false

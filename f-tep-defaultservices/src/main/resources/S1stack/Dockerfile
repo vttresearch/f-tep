@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y\
  
 ###########################
 # Download and install SNAP
-ENV SNAP_MAJ_VER='6'\
+ENV SNAP_MAJ_VER='7'\
  SNAP_MIN_VER='0'\
  SNAP_POINT_VER='0'
 

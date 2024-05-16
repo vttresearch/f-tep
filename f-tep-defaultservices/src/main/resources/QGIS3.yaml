@@ -1,6 +1,6 @@
 ---
 id: "QGIS3"
-title: "Start the QGIS 3 Desktop Application"
+title: "Start the QGIS 3.24.3 Desktop Application"
 description: "Quantum GIS - A Geographical Information Systems (GIS) GUI Package. A core F-TEP service."
 version: "1.0"
 storeSupported: true
