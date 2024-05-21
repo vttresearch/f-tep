@@ -204,4 +204,62 @@ public class JobConfig implements FtepEntityWithOwner<JobConfig>, FtepFileRefere
         int scaled = (int)Math.ceil(days * scale);
         return Math.max(scaled, minimum);
     }
+
+
+    /**
+     * Calculate difference in days between two job input parameters.
+     * The parameters have to be in format yyyy-mm-dd.
+     *
+     * @param param1
+     * @param param2
+     * @param scale Scaling factor to be applied to the day difference
+     * @param minimum The minimum value to return regardless of other inputs
+     * @param maxParam Name of the parameter that contains an integer value that is the maximum value to return
+     * @param noRunParam If the parameter has value True cost estimate is 0
+     * @return
+     * @throws CostingExpressionException if evaluation fails
+     */
+    public int sen2LikeSingleTileEstimate(String param1, String param2, 
+            double scale, int minimum, String maxParam, String noRunParam) throws CostingExpressionException {
+        int days = dayDifference(param1, param2);
+        int scaled = (int)Math.ceil(days * scale);
+        if (scaled < minimum) {
+            scaled = minimum;
+        }
+        if (maxParam != null) {
+            String p = null;
+            if (this.inputs.containsKey(maxParam)) {
+                java.util.Collection<String> value = this.inputs.get(maxParam);
+                if (value != null && value.size() == 1) {
+                    p = (String) value.toArray()[0];
+                }
+            }
+            if (p == null) {
+                throw new CostingExpressionException("Value for maxParam not found");
+            }
+            try {
+                int maximum = Integer.valueOf(p);
+                if (maximum > 0 && scaled > maximum) {
+                    scaled = maximum;
+                }
+            } catch (Exception e) {
+                throw new CostingExpressionException("Failed to parse value for maxParam");
+            }
+        }
+        // No cost in no-run mode
+        if (noRunParam != null) {
+            String p = null;
+            if (this.inputs.containsKey(noRunParam)) {
+                java.util.Collection<String> value = this.inputs.get(noRunParam);
+                if (value != null && value.size() == 1) {
+                    p = (String) value.toArray()[0];
+                    boolean noRun = Boolean.valueOf(p);
+                    if (noRun) {
+                        scaled = 0;
+                    }
+                }
+            }
+        }
+        return scaled;
+    }
 }
