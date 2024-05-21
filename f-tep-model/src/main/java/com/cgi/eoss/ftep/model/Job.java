@@ -261,10 +261,13 @@ public class Job implements FtepEntityWithOwner<Job>, FtepFileReferencer {
      * @param param2
      * @param scale Scaling factor to be applied to the day difference
      * @param minimum The minimum value to return regardless of other inputs
+     * @param maxParam Name of the parameter that contains an integer value that is the maximum value to return
+     * @param noRunParam If the parameter has value True cost estimate is 0
      * @return
      * @throws CostingExpressionException if evaluation fails
      */
-    public int sen2LikeSingleTileEstimate(String param1, String param2, double scale, int minimum, String maxParam) throws CostingExpressionException {
+    public int sen2LikeSingleTileEstimate(String param1, String param2, 
+            double scale, int minimum, String maxParam, String noRunParam) throws CostingExpressionException {
         int days = dayDifference(param1, param2);
         int scaled = (int)Math.ceil(days * scale);
         if (scaled < minimum) {
@@ -288,6 +291,20 @@ public class Job implements FtepEntityWithOwner<Job>, FtepFileReferencer {
                 }
             } catch (Exception e) {
                 throw new CostingExpressionException("Failed to parse value for maxParam");
+            }
+        }
+        // No cost in no-run mode
+        if (noRunParam != null) {
+            String p = null;
+            if (this.config.getInputs().containsKey(noRunParam)) {
+                java.util.Collection<String> value = this.config.getInputs().get(noRunParam);
+                if (value != null && value.size() == 1) {
+                    p = (String) value.toArray()[0];
+                    boolean noRun = Boolean.valueOf(p);
+                    if (noRun) {
+                        scaled = 0;
+                    }
+                }
             }
         }
         return scaled;
