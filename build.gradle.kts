@@ -23,7 +23,7 @@ plugins {
 
 allprojects {
     group = "com.cgi.eoss.f-tep"
-    version = "3.6.20"
+    version = "3.6.21"
 
     buildscript {
         repositories {
