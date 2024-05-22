@@ -281,16 +281,15 @@ public class Job implements FtepEntityWithOwner<Job>, FtepFileReferencer {
                     p = (String) value.toArray()[0];
                 }
             }
-            if (p == null) {
-                throw new CostingExpressionException("Value for maxParam not found");
-            }
-            try {
-                int maximum = Integer.valueOf(p);
-                if (maximum > 0 && scaled > maximum) {
-                    scaled = maximum;
+            if (p != null  && !p.trim().equals("")) {
+                try {
+                    int maximum = Integer.valueOf(p);
+                    if (maximum > 0 && scaled > maximum) {
+                        scaled = maximum;
+                    }
+                } catch (Exception e) {
+                    throw new CostingExpressionException("Failed to parse value for maxParam");
                 }
-            } catch (Exception e) {
-                throw new CostingExpressionException("Failed to parse value for maxParam");
             }
         }
         // No cost in no-run mode
