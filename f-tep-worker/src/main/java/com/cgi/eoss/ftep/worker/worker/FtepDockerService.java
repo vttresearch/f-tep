@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -121,12 +122,15 @@ public class FtepDockerService {
                     .map(p -> new com.github.dockerjava.api.model.PortBinding(new Ports.Binding(null, null), ExposedPort.parse(p)))
                     .collect(Collectors.toList()));
 
+            List<String> env = new ArrayList<>();
             // Add proxy vars to the container, if they are set in the environment
-            createContainerCmd.withEnv(
-                    ImmutableSet.of("http_proxy", "https_proxy", "no_proxy").stream()
+            env.addAll( ImmutableSet.of("http_proxy", "https_proxy", "no_proxy").stream()
                             .filter(var -> System.getenv().containsKey(var))
                             .map(var -> var + "=" + System.getenv(var))
-                            .collect(Collectors.toList()));
+                            .collect(Collectors.toList()) );
+            // Expose the name of the F-TEP user as an environment variable
+            env.add("FTEP_USER=" + jobSpec.getJob().getUserId());
+            createContainerCmd.withEnv( env );
 
             return createContainerCmd.exec();
         }
