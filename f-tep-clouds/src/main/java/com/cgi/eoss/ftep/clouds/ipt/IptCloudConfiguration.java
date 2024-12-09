@@ -73,6 +73,9 @@ public class IptCloudConfiguration {
     @Value("${ftep.clouds.ipt.node.networkId}")
     private String networkId;
 
+    @Value("${ftep.clouds.ipt.node.networks}")
+    private String networks;
+
     @Value("${ftep.clouds.ipt.node.nfsHost}")
     private String nfsHost;
 
@@ -146,6 +149,7 @@ public class IptCloudConfiguration {
                 .sshUser(sshUsername)
                 .securityGroupName(securityGroupName)
                 .networkId(networkId)
+                .networks(networks.split(","))
                 .nfsHost(nfsHost)
                 .serverNamePrefix(serverNamePrefix)
                 .additionalNfsMounts(additionalNfsMounts)
