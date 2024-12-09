@@ -198,7 +198,7 @@ public class IptNodeFactory implements NodeFactory {
             CreateServerOptions options = new CreateServerOptions()
                     .metadata(metadata)
                     .keyPairName(keypairName)
-                    .networks(provisioningConfig.getNetworkId())
+                    .networks(provisioningConfig.getNetworks())
                     .securityGroupNames(provisioningConfig.getSecurityGroupName());
 
             String newServerName = provisioningConfig.getServerNamePrefix() + UUID.randomUUID().toString();
