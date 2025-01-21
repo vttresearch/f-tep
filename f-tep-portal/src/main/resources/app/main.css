@@ -3278,3 +3278,11 @@ template {
 [hidden] {
   display: none;
 }
+
+.sldmenu {
+  width: 200px;
+}
+
+.sldmenuitem:hover {
+  background-color: lightgray;
+}

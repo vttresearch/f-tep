@@ -98,10 +98,10 @@
             <div class="md-list-item-text" ng-click="selectOutputFile(outputFile)" layout="column">
                 {{outputFile.uri}}
             </div>
-
+<div>
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-show="hasWmsLink(outputFile) && !isWmsVisible(outputFile)"
-                       ng-click="toggleWMS(outputFile, true); $event.stopPropagation()"
+                       ng-click="toggleSldMenu(outputFile); $event.stopPropagation()"
                        uib-tooltip="Show WMS Layer"
                        tooltip-placement="top"
                        tooltip-trigger="mouseenter"
@@ -118,6 +118,14 @@
                        tooltip-append-to-body="true">
                 <i class="material-icons">layers_clear</i>
             </md-button>
+<div class="sldmenu" ng-show="sldMenuShowing(outputFile)" ng-mouseleave="hideSldMenu(outputFile)">
+  <div class="sldmenuitem" ng-click="toggleWMS(outputFile, true); hideSldMenu(outputFile); $event.stopPropagation()">Default</div>
+  <div class="sldmenuitem"
+    ng-repeat="sld in slds"
+    ng-click="toggleWMS(outputFile, true, sld.id); hideSldMenu(outputFile); $event.stopPropagation()"
+  >{{sld.name}}</div>
+</div>
+</div>
 
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-href="{{outputFile._links.download.href}}"

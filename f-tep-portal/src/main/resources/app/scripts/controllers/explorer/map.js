@@ -761,6 +761,15 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
         /** ----- END OF BASKET LAYER ----- **/
 
         /* ----- WMS LAYER ----- */
+
+        function createDefaultSLD(layerName, sldId, sldTemplates) {
+            if (sldTemplates[sldId]) {
+                let template = sldTemplates[sldId];
+                return template.start + layerName + template.end;
+            }
+            return null;
+        }
+
         var productLayers = [];
 
         $scope.$on('update.wmslayer', function(event, files) {
@@ -774,11 +783,29 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
                 // Create layer for each output file
                 for (var j = 0; j < files.length; j++) {
                     if (files[j]._links && files[j]._links.wms) {
+                        var params = {
+                            FORMAT: 'image/png'
+                        };
+
+                        if (files[j].sld_id) {
+                            let layer_name = files[j]._links.wms.href.substring(files[j]._links.wms.href.lastIndexOf("layers=")+7);
+                            layer_name = layer_name.replace('%3A',':');
+//console.log(MapService.defaultSlds);
+//console.log(layer_name);
+//console.log(files[j].sld_id);
+                            let sld = createDefaultSLD(layer_name, files[j].sld_id, MapService.defaultSlds);
+                            if (sld) {
+                                params = {
+                                    FORMAT: 'image/png',
+                                    STYLES: 'SLD',
+                                    SLD_BODY: sld
+                                };
+                            }
+                        }
+
                         var source = new ol.source.ImageWMS({
                             url: files[j]._links.wms.href,
-                            params: {
-                                format: 'image/png'
-                            },
+                            params: params,
                             projection: EPSG_3857
                         });
                         var productLayer = new ol.layer.Image({
