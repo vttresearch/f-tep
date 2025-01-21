@@ -8,7 +8,7 @@
 'use strict';
 define(['../../ftepmodules'], function (ftepmodules) {
 
-    ftepmodules.controller('ExplorerCtrl', ['$scope', '$rootScope', '$mdDialog', 'TabService', 'MessageService', 'ftepProperties', 'CommonService', 'CommunityService', '$timeout', function ($scope, $rootScope, $mdDialog, TabService, MessageService, ftepProperties, CommonService, CommunityService, $timeout) {
+    ftepmodules.controller('ExplorerCtrl', ['$scope', '$rootScope', '$mdDialog', 'TabService', 'MessageService', 'ftepProperties', 'CommonService', 'CommunityService', 'MapService', '$timeout', function ($scope, $rootScope, $mdDialog, TabService, MessageService, ftepProperties, CommonService, CommunityService, MapService, $timeout) {
 
         /* Set active page */
         $scope.navInfo = TabService.navInfo.explorer;
@@ -108,6 +108,8 @@ define(['../../ftepmodules'], function (ftepmodules) {
             }
         };
         /** END OF BOTTOM BAR **/
+
+        $scope.slds = MapService.defaultSlds;
 
         $scope.$on('slds.updated', function (event, slds) {
             $scope.slds = slds;
