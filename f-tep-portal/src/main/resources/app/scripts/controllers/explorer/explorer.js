@@ -133,13 +133,24 @@ define(['../../ftepmodules'], function (ftepmodules) {
             delete item.show_sld_menu;
         };
 
+        $scope.toggleSldView = function(item) {
+            $scope.navInfo.sldViewVisible = !$scope.navInfo.sldViewVisible;
+        };
+        $scope.hideSldView = function() {
+            $scope.navInfo.sldViewVisible = false;
+        };
+
         /** WMS layer show/hide option for Product Search result items **/
         $scope.visibleWmsList = [];
 
         /* Toggles display of a wms item */
-        $scope.toggleSearchResWMS = function ($event, item, show, sld_id) {
+        $scope.toggleSearchResWMS = function ($event, item, show, colors, quantities) {
             if (show) {
-                item.properties.sld_id = sld_id;
+                if (colors && quantities && Array.isArray(colors) && Array.isArray(quantities) && colors.length==quantities.length) {
+                    item.properties.sld = { 'colors': colors, 'quantities': quantities };
+                } else {
+                    delete item.properties.sld;
+                }
                 $scope.visibleWmsList.push(item.properties);
             } else {
                 var index = $scope.visibleWmsList.indexOf(item.properties);

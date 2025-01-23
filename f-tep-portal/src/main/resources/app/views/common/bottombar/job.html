@@ -122,7 +122,7 @@
   <div class="sldmenuitem" ng-click="toggleWMS(outputFile, true); hideSldMenu(outputFile); $event.stopPropagation()">Default</div>
   <div class="sldmenuitem"
     ng-repeat="sld in slds"
-    ng-click="toggleWMS(outputFile, true, sld.id); hideSldMenu(outputFile); $event.stopPropagation()"
+    ng-click="toggleWMS(outputFile, true, sld.colors, sld.quantities); hideSldMenu(outputFile); $event.stopPropagation()"
   >{{sld.name}}</div>
 </div>
 </div>

@@ -1,0 +1,20 @@
+{
+    "slds": [
+	{
+            "id": 1,
+            "name": "White-red 0-1",
+            "colors": ["#FFFFFF","#FF0000"],
+            "quantities": [0,1]
+        }, {
+            "id": 2,
+            "name": "White-red 0-255",
+            "colors": ["#FFFFFF","#FF0000"],
+            "quantities": [0,255]
+        }, {
+            "id": 3,
+            "name": "White-red 0-65535",
+            "colors": ["#FFFFFF","#FF0000"],
+            "quantities": [0,65535]
+        }
+    ]
+}

@@ -1,7 +1,11 @@
 <article id="bottombar">
 
     <div id="bottombar-tabs" class="col-xs-12 no-padding">
-        <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation>
+<div ng-if="navInfo.sldViewVisible">
+Foo
+<button type="button" ng-click="hideSldView()">Cancel</button>
+</div>
+        <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
 
             <section ng-controller="ResultsCtrl" ng-if="navInfo.activeTab == tabs.EXPLORER">
                 <div ng-if="navInfo.activeBottomNav == bottomNavTabs.RESULTS" class="tab-options" ng-include src="'views/common/bottombar/tabs/resultstab.html'" />

@@ -762,6 +762,17 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
 
         /* ----- WMS LAYER ----- */
 
+        function createSLD(layerName, colors, quantities) {
+          let sld = '<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><StyledLayerDescriptor version=\"1.0.0\" xsi:schemaLocation=\"http://www.opengis.net/sld StyledLayerDescriptor.xsd\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><NamedLayer><Name>';
+          sld += layerName;
+          sld += '</Name><UserStyle><Title>SLD</Title><IsDefault>1</IsDefault><FeatureTypeStyle><Rule><RasterSymbolizer><ColorMap>';
+          for (var i=0; i<colors.length; i++) {
+            sld += '<ColorMapEntry color=\"' + colors[i] + '\" quantity=\"' + quantities[i] + '\"/>';
+          }
+          sld += '</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>';
+          return sld;
+        }
+
         function createDefaultSLD(layerName, sldId, sldTemplates) {
             if (sldTemplates[sldId]) {
                 let template = sldTemplates[sldId];
@@ -787,13 +798,15 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
                             FORMAT: 'image/png'
                         };
 
-                        if (files[j].sld_id) {
+                        //if (files[j].sld_id) {
+                        if (files[j].sld) {
                             let layer_name = files[j]._links.wms.href.substring(files[j]._links.wms.href.lastIndexOf("layers=")+7);
                             layer_name = layer_name.replace('%3A',':');
 //console.log(MapService.defaultSlds);
 //console.log(layer_name);
 //console.log(files[j].sld_id);
-                            let sld = createDefaultSLD(layer_name, files[j].sld_id, MapService.defaultSlds);
+                            //let sld = createDefaultSLD(layer_name, files[j].sld_id, MapService.defaultSlds);
+                            let sld = createSLD(layer_name, files[j].sld.colors, files[j].sld.quantities);
                             if (sld) {
                                 params = {
                                     FORMAT: 'image/png',

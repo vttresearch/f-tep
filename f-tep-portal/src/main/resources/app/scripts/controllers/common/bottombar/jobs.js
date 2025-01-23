@@ -115,9 +115,13 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         };
 
         /* Toggles display of a wms item */
-        $scope.toggleWMS = function (file, show, sld_id) {
+        $scope.toggleWMS = function (file, show, colors, quantities) {
             if (show) {
-                file.sld_id = sld_id;
+                if (colors && quantities && Array.isArray(colors) && Array.isArray(quantities) && colors.length==quantities.length) {
+                    file.sld = { 'colors':colors, 'quantities':quantities};
+                } else {
+                    delete file.sld;
+                }
                 $scope.jobParams.wms.visibleList.push(file);
             } else {
                 var index = $scope.jobParams.wms.visibleList.indexOf(file);
