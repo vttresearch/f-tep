@@ -762,12 +762,12 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
 
         /* ----- WMS LAYER ----- */
 
-        function createSLD(layerName, colors, quantities) {
+        function createSLD(layerName, colormap) {
           let sld = '<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><StyledLayerDescriptor version=\"1.0.0\" xsi:schemaLocation=\"http://www.opengis.net/sld StyledLayerDescriptor.xsd\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><NamedLayer><Name>';
           sld += layerName;
           sld += '</Name><UserStyle><Title>SLD</Title><IsDefault>1</IsDefault><FeatureTypeStyle><Rule><RasterSymbolizer><ColorMap>';
-          for (var i=0; i<colors.length; i++) {
-            sld += '<ColorMapEntry color=\"' + colors[i] + '\" quantity=\"' + quantities[i] + '\"/>';
+          for (var i=0; i<colormap.length; i++) {
+            sld += '<ColorMapEntry color=\"' + colormap[i].color + '\" quantity=\"' + colormap[i].quantity + '\"/>';
           }
           sld += '</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>';
           return sld;
@@ -806,7 +806,7 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
 //console.log(layer_name);
 //console.log(files[j].sld_id);
                             //let sld = createDefaultSLD(layer_name, files[j].sld_id, MapService.defaultSlds);
-                            let sld = createSLD(layer_name, files[j].sld.colors, files[j].sld.quantities);
+                            let sld = createSLD(layer_name, files[j].sld.colormap);
                             if (sld) {
                                 params = {
                                     FORMAT: 'image/png',

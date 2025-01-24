@@ -1,9 +1,41 @@
 <article id="bottombar">
 
     <div id="bottombar-tabs" class="col-xs-12 no-padding">
-<div ng-if="navInfo.sldViewVisible">
-Foo
-<button type="button" ng-click="hideSldView()">Cancel</button>
+<div id="sldPanel" ng-if="navInfo.sldViewVisible">
+  <div id="sldViewTitle">Style Editor</div>
+  <label id="sldMenuLabel" for="sldmenu">Choose styling:</label>
+  <select name="sldmenu" id="sldmenu">
+    <option ng-repeat="sld in slds" value={{sld.colormap}}>{{sld.name}}</option>
+  </select>
+  <div id="sldTableDiv">
+  <table id="sldTable">
+    <tr class="sldHeaderRow">
+      <th class="sldHeaderCell">Pixel value</th>
+      <th class="sldHeaderCell">Color</th>
+      <th></th>
+    </tr>
+    <tr class="sldDataRow" ng-repeat="cm in sldColormap">
+      <td class="sldDataCell"><input class="sldQuantityInput" type="number" value="{{cm.quantity}}"></td>
+      <td class="sldDataCell"><input class="sldColorInput" type="color" value="{{cm.color}}"></td>
+      <td class="sldButtonCell" ng-click="newSldRowBelow($event)"
+                   aria-label="Add row below"
+                   uib-tooltip="Add row below"
+                   tooltip-placement="left"
+                   tooltip-trigger="mouseenter"
+                   tooltip-append-to-body="true"><i class="material-icons">vertical_align_bottom</i></td>
+      <td class="sldButtonCell" ng-click="newSldRowAbove($event)"
+                   aria-label="Add row above"
+                   uib-tooltip="Add row above"
+                   tooltip-placement="left"
+                   tooltip-trigger="mouseenter"
+                   tooltip-append-to-body="true"><i class="material-icons">vertical_align_top</i></td>
+    </tr>
+  </table>
+  </div>
+  <p>
+  <button type="button" ng-click="applySld()">Apply</button>
+  <button type="button" ng-click="hideSldView()">Close</button>
+  <button type="button" ng-click="saveSld()">Save</button>
 </div>
         <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
 

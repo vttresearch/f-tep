@@ -56,8 +56,8 @@
                             <md-button class="toolbar-button md-secondary"
                                 ng-show="hasWmsLink(item) && isSearchResWmsVisible(item)"
                                 ng-click="toggleSldView(item) && $event.stopPropagation()"
-                                aria-label="Adjust SLD"
-                                uib-tooltip="Adjust SLD"
+                                aria-label="Adjust Style"
+                                uib-tooltip="Adjust Style"
                                 tooltip-placement="top"
                                 tooltip-trigger="mouseenter"
                                 tooltip-append-to-body="true">
@@ -68,8 +68,8 @@
                             <md-button class="toolbar-button md-secondary"
                                 ng-show="hasWmsLink(item) && !isSearchResWmsVisible(item)"
                                 ng-click="toggleSldMenu(item); $event.stopPropagation()"
-                                aria-label="WMS Layer Not Visible"
-                                uib-tooltip="Show WMS Layer"
+                                aria-label="Image Layer Not Visible"
+                                uib-tooltip="Show Image Layer"
                                 tooltip-placement="top"
                                 tooltip-trigger="mouseenter"
                                 tooltip-append-to-body="true">
@@ -78,18 +78,17 @@
                             <md-button class="toolbar-button md-secondary"
                                 ng-show="hasWmsLink(item) && isSearchResWmsVisible(item)"
                                 ng-click="toggleSearchResWMS($event, item, false, 1); $event.stopPropagation()"
-                                aria-label="WMS Layer Visible"
-                                uib-tooltip="Hide WMS Layer"
+                                aria-label="Image Layer Visible"
+                                uib-tooltip="Hide Image Layer"
                                 tooltip-placement="top"
                                 tooltip-trigger="mouseenter"
                                 tooltip-append-to-body="true">
                                 <i class="material-icons">layers_clear</i>
                             </md-button>
 <div class="sldmenu" ng-show="sldMenuShowing(item)" ng-mouseleave="hideSldMenu(item)">
-  <div class="sldmenuitem" ng-click="toggleSearchResWMS($event, item, true); hideSldMenu(item); $event.stopPropagation()">Default</div>
   <div class="sldmenuitem"
     ng-repeat="sld in slds"
-    ng-click="toggleSearchResWMS($event, item, true, sld.colors, sld.quantities); hideSldMenu(item); $event.stopPropagation()"
+    ng-click="toggleSearchResWMS($event, item, true, sld); hideSldMenu(item); $event.stopPropagation()"
   >{{sld.name}}</div>
 </div>
                         </div>

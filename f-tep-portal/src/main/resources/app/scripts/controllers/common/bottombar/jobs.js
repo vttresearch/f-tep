@@ -115,10 +115,10 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         };
 
         /* Toggles display of a wms item */
-        $scope.toggleWMS = function (file, show, colors, quantities) {
+        $scope.toggleWMS = function (file, show, colormap) {
             if (show) {
-                if (colors && quantities && Array.isArray(colors) && Array.isArray(quantities) && colors.length==quantities.length) {
-                    file.sld = { 'colors':colors, 'quantities':quantities};
+                if (colormap && Array.isArray(colormap)) {
+                    file.sld = { 'colormap':colormap };
                 } else {
                     delete file.sld;
                 }

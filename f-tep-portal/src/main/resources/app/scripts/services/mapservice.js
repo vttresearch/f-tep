@@ -38,13 +38,13 @@ define(['../ftepmodules', 'ol'], function (ftepmodules, ol) {
             }).
             then(function (response) {
                 //console.log(response.data);
-                let slds = {}
+                let slds = [ { 'name':'default', 'colormap':[] } ];
                 for (var i=0; i<response.data.slds.length; i++) {
-                  slds[response.data.slds[i].id] = response.data.slds[i];
+                  slds.push(response.data.slds[i]);
                 }
                 //console.log(slds);
                 parent.defaultSlds = slds;
-                $rootScope.$broadcast('slds.updated', response.data.slds);
+                $rootScope.$broadcast('slds.updated', slds);
             })
             .catch(function(error) {
                 MessageService.addError('Unable to get default GeoServer styles', error);

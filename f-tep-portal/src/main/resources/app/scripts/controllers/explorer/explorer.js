@@ -109,7 +109,13 @@ define(['../../ftepmodules'], function (ftepmodules) {
         };
         /** END OF BOTTOM BAR **/
 
+        /** Set available SLD styles **/
         $scope.slds = MapService.defaultSlds;
+        let slds = localStorage.getItem('slds');
+        if (slds) {
+            $scope.customSlds = JSON.parse(slds);
+        }
+        console.log($scope.customSlds);
 
         $scope.$on('slds.updated', function (event, slds) {
             $scope.slds = slds;
@@ -135,22 +141,63 @@ define(['../../ftepmodules'], function (ftepmodules) {
 
         $scope.toggleSldView = function(item) {
             $scope.navInfo.sldViewVisible = !$scope.navInfo.sldViewVisible;
+            $scope.navInfo.sldViewItem = item.properties;
+            $scope.sldColormap = JSON.parse(JSON.stringify(item.properties.sld.colormap));
         };
         $scope.hideSldView = function() {
             $scope.navInfo.sldViewVisible = false;
+            $scope.navInfo.sldViewItem = undefined;
+            $scope.sldColormap = undefined;
         };
+
+        $scope.newSldRowBelow = function($event) {
+            let index = $event.currentTarget.parentNode.rowIndex;
+            $scope.sldColormap.splice(index, 0, { 'quantity':0,'color':'#FFFFFF' });
+        }
+        $scope.newSldRowAbove = function($event) {
+            let index = $event.currentTarget.parentNode.rowIndex - 1;
+            $scope.sldColormap.splice(index, 0, { 'quantity':0,'color':'#FFFFFF' });
+        }
+
+        getColormap = function() {
+            let table = document.getElementById('sldTable');
+            let quantityInputs = table.getElementsByClassName('sldQuantityInput');
+            let colorInputs = table.getElementsByClassName('sldColorInput');
+            let cm = [];
+            for (let i=0; i<quantityInputs.length; i++) {
+                cm.push({ 'quantity':quantityInputs[i].value, 'color':colorInputs[i].value });
+            }
+            return cm;
+        }
+
+        $scope.applySld = function() {
+            let cm = getColormap();
+            $scope.navInfo.sldViewItem.sld = { 'colormap': cm };
+            $scope.sldColormap = JSON.parse(JSON.stringify(cm));
+
+            $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
+        };
+
+        $scope.saveSld = function() {
+            let cm = getColormap();
+            let sld = { 'name': 'test', 'colormap':cm };
+            let customSlds = localStorage.getItem('slds');
+            if (customSlds) { 
+                customSlds = JSON.parse(customSlds);
+            } else {
+                customSlds = {};
+            }
+            customSlds[sld.name] = sld;
+            localStorage.setItem('slds', JSON.stringify(customSlds));
+        }
 
         /** WMS layer show/hide option for Product Search result items **/
         $scope.visibleWmsList = [];
 
         /* Toggles display of a wms item */
-        $scope.toggleSearchResWMS = function ($event, item, show, colors, quantities) {
+        $scope.toggleSearchResWMS = function ($event, item, show, sld) {
             if (show) {
-                if (colors && quantities && Array.isArray(colors) && Array.isArray(quantities) && colors.length==quantities.length) {
-                    item.properties.sld = { 'colors': colors, 'quantities': quantities };
-                } else {
-                    delete item.properties.sld;
-                }
+                item.properties.sld = sld;
                 $scope.visibleWmsList.push(item.properties);
             } else {
                 var index = $scope.visibleWmsList.indexOf(item.properties);
