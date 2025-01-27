@@ -31,6 +31,8 @@ define(['../ftepmodules', 'ol'], function (ftepmodules, ol) {
 
         var rootUri = ftepProperties.FTEP_URL;
 
+        this.defaultSld = { 'id':0, 'name':'default', 'colormap':[] };
+		
         this.updateDefaultSlds = function(parent) {
             return $http({
                 method: 'GET',
@@ -38,11 +40,20 @@ define(['../ftepmodules', 'ol'], function (ftepmodules, ol) {
             }).
             then(function (response) {
                 //console.log(response.data);
-                let slds = [ { 'name':'default', 'colormap':[] } ];
+                let slds = [ parent.defaultSld ];
                 for (var i=0; i<response.data.slds.length; i++) {
                   slds.push(response.data.slds[i]);
                 }
                 //console.log(slds);
+
+                let localSlds = localStorage.getItem('slds');
+                if (localSlds) {
+                    let localSldsObj = JSON.parse(localSlds);
+			        for (var key of Object.keys(localSldsObj)) {
+				        slds.push(localSldsObj[key]);
+			        } 
+                }
+
                 parent.defaultSlds = slds;
                 $rootScope.$broadcast('slds.updated', slds);
             })
@@ -50,6 +61,11 @@ define(['../ftepmodules', 'ol'], function (ftepmodules, ol) {
                 MessageService.addError('Unable to get default GeoServer styles', error);
             });
         };
+
+		this.getSlds = function() {
+			this.updateDefaultSlds(this);
+			return this.defaultSlds;
+		}
 
         this.updateDefaultSlds(this);
 

@@ -3,10 +3,10 @@
     <div id="bottombar-tabs" class="col-xs-12 no-padding">
 <div id="sldPanel" ng-if="navInfo.sldViewVisible">
   <div id="sldViewTitle">Style Editor</div>
-  <label id="sldMenuLabel" for="sldmenu">Choose styling:</label>
-  <select name="sldmenu" id="sldmenu">
-    <option ng-repeat="sld in slds" value={{sld.colormap}}>{{sld.name}}</option>
+  <label id="sldMenuLabel" for="sldmenu">Choose existing style:</label>
+  <select name="sldmenu" id="sldmenu" ng-model="editorSldName" ng-options="sld.name for sld in slds" ng-change="sldSelectionChanged()">
   </select>
+  <div id="sldEditTitle">Customize style:</div>
   <div id="sldTableDiv">
   <table id="sldTable">
     <tr class="sldHeaderRow">
@@ -14,7 +14,7 @@
       <th class="sldHeaderCell">Color</th>
       <th></th>
     </tr>
-    <tr class="sldDataRow" ng-repeat="cm in sldColormap">
+    <tr class="sldDataRow" ng-repeat="cm in editorSld.colormap">
       <td class="sldDataCell"><input class="sldQuantityInput" type="number" value="{{cm.quantity}}"></td>
       <td class="sldDataCell"><input class="sldColorInput" type="color" value="{{cm.color}}"></td>
       <td class="sldButtonCell" ng-click="newSldRowBelow($event)"
@@ -29,13 +29,28 @@
                    tooltip-placement="left"
                    tooltip-trigger="mouseenter"
                    tooltip-append-to-body="true"><i class="material-icons">vertical_align_top</i></td>
+      <td class="sldButtonCell" ng-click="deleteSldRow($event)"
+                   aria-label="Delete row"
+                   uib-tooltip="Delete row"
+                   tooltip-placement="left"
+                   tooltip-trigger="mouseenter"
+                   tooltip-append-to-body="true"><i class="material-icons">clear</i></td>
     </tr>
   </table>
   </div>
-  <p>
-  <button type="button" ng-click="applySld()">Apply</button>
-  <button type="button" ng-click="hideSldView()">Close</button>
-  <button type="button" ng-click="saveSld()">Save</button>
+  <div id="sldNameDiv"
+                   aria-label="Name for the saved custom style. Using an existing name overwrites the old style."
+                   uib-tooltip="Name for the saved custom style. Using an existing name overwrites the old style."
+                   tooltip-placement="left"
+                   tooltip-trigger="mouseenter"
+                   tooltip-append-to-body="true">
+	<label id="sldNameLabel" for="sldname">Save style as:</label><input id="sldname" name="sldname" type="text"></input>
+  </div>
+  <div id="sldButtonDiv">
+    <button type="button" ng-click="applySld()">Apply</button>
+	<button type="button" ng-click="hideSldView()">Close</button>
+	<button type="button" ng-click="saveSld()">Save</button>
+  </div>
 </div>
         <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
 

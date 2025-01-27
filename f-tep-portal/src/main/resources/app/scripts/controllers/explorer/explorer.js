@@ -111,55 +111,42 @@ define(['../../ftepmodules'], function (ftepmodules) {
 
         /** Set available SLD styles **/
         $scope.slds = MapService.defaultSlds;
-        let slds = localStorage.getItem('slds');
-        if (slds) {
-            $scope.customSlds = JSON.parse(slds);
-        }
-        console.log($scope.customSlds);
+		$scope.defaultSld = MapService.defaultSld;
 
         $scope.$on('slds.updated', function (event, slds) {
             $scope.slds = slds;
-            console.log(slds);
+            console.log($scope.slds);
         });
 
-        $scope.sldMenuShowing = function(item) {
-            if (item.show_sld_menu) {
-              return true;
-            }
-            return false;
-        };
-        $scope.toggleSldMenu = function(item) {
-            if (item.show_sld_menu) {
-              delete item.show_sld_menu;
-            } else {
-              item.show_sld_menu = 1;
-            }
-        };
-        $scope.hideSldMenu = function(item) {
-            delete item.show_sld_menu;
-        };
-
-        $scope.toggleSldView = function(item) {
-            $scope.navInfo.sldViewVisible = !$scope.navInfo.sldViewVisible;
+        $scope.openSldView = function(item) {
             $scope.navInfo.sldViewItem = item.properties;
-            $scope.sldColormap = JSON.parse(JSON.stringify(item.properties.sld.colormap));
+            $scope.editorSld = JSON.parse(JSON.stringify(item.properties.sld));
+			$scope.editorSldName = item.properties.sld.name;
+            $scope.navInfo.sldViewVisible = true;
         };
         $scope.hideSldView = function() {
             $scope.navInfo.sldViewVisible = false;
             $scope.navInfo.sldViewItem = undefined;
-            $scope.sldColormap = undefined;
+            $scope.editorSld = undefined;
         };
 
         $scope.newSldRowBelow = function($event) {
             let index = $event.currentTarget.parentNode.rowIndex;
-            $scope.sldColormap.splice(index, 0, { 'quantity':0,'color':'#FFFFFF' });
+            $scope.editorSld.colormap.splice(index, 0, { 'quantity':0,'color':'#FFFFFF' });
         }
         $scope.newSldRowAbove = function($event) {
             let index = $event.currentTarget.parentNode.rowIndex - 1;
-            $scope.sldColormap.splice(index, 0, { 'quantity':0,'color':'#FFFFFF' });
+            $scope.editorSld.colormap.splice(index, 0, { 'quantity':0,'color':'#FFFFFF' });
+        }
+        $scope.deleteSldRow = function($event) {
+            let index = $event.currentTarget.parentNode.rowIndex - 1; // -1 because of header row
+			console.log(index);
+            $scope.editorSld.colormap.splice(index, 1);
+			console.log($scope.editorSld);
         }
 
-        getColormap = function() {
+        /** Parse SLD from the SLD view values **/
+        parseSld = function() {
             let table = document.getElementById('sldTable');
             let quantityInputs = table.getElementsByClassName('sldQuantityInput');
             let colorInputs = table.getElementsByClassName('sldColorInput');
@@ -167,28 +154,49 @@ define(['../../ftepmodules'], function (ftepmodules) {
             for (let i=0; i<quantityInputs.length; i++) {
                 cm.push({ 'quantity':quantityInputs[i].value, 'color':colorInputs[i].value });
             }
-            return cm;
+            return { 'name':'test', 'colormap':cm };
         }
 
+        $scope.sldSelectionChanged = function() {
+			//console.log($scope.editorSld);
+			let dropdown = document.getElementById('sldmenu');
+			//console.log(dropdown.selectedIndex);
+			//console.log($scope.slds[dropdown.selectedIndex]);
+            $scope.navInfo.sldViewItem.sld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
+            $scope.editorSld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
+			$scope.editorSldName = $scope.editorSld.name;
+
+            $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
+		}
+
         $scope.applySld = function() {
-            let cm = getColormap();
-            $scope.navInfo.sldViewItem.sld = { 'colormap': cm };
-            $scope.sldColormap = JSON.parse(JSON.stringify(cm));
+            let sld = parseSld();
+			sld.name = '';
+            $scope.navInfo.sldViewItem.sld = sld;
+            $scope.editorSld = JSON.parse(JSON.stringify(sld));
+			$scope.editorSldName = $scope.editorSld.name;
 
             $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
         };
 
         $scope.saveSld = function() {
-            let cm = getColormap();
-            let sld = { 'name': 'test', 'colormap':cm };
-            let customSlds = localStorage.getItem('slds');
-            if (customSlds) { 
-                customSlds = JSON.parse(customSlds);
-            } else {
-                customSlds = {};
-            }
-            customSlds[sld.name] = sld;
-            localStorage.setItem('slds', JSON.stringify(customSlds));
+			let name = document.getElementById('sldname').value;
+			console.log(name);
+			if (name == $scope.defaultSld.name) {
+				window.alert('Default style cannot be overdriven, please select another name!');
+			} else {
+				let sld = parseSld();
+				let customSlds = localStorage.getItem('slds');
+				if (customSlds) { 
+					customSlds = JSON.parse(customSlds);
+				} else {
+					customSlds = {};
+				}
+				sld.name = name;
+				customSlds[sld.name] = sld;
+				localStorage.setItem('slds', JSON.stringify(customSlds));
+				$scope.slds = MapService.getSlds();
+			}
         }
 
         /** WMS layer show/hide option for Product Search result items **/
@@ -197,6 +205,9 @@ define(['../../ftepmodules'], function (ftepmodules) {
         /* Toggles display of a wms item */
         $scope.toggleSearchResWMS = function ($event, item, show, sld) {
             if (show) {
+                if (sld == undefined) {
+                    sld = $scope.defaultSld;
+                }
                 item.properties.sld = sld;
                 $scope.visibleWmsList.push(item.properties);
             } else {
