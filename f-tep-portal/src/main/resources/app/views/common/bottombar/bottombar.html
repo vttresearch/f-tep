@@ -4,14 +4,14 @@
 	
 <div id="sldPanel" ng-if="navInfo.sldViewVisible">
   <div id="sldViewTitle">STYLE EDITOR
-    <i ng-click="showSingleBand()" ng-show="navInfo.multiBandSldView"
+    <i ng-click="showSingleBand()" ng-show="!editorSld.singleband"
 	  class="material-icons sldButton sldHeaderButton"
 	  aria-label="Show single-band style settings"
 	  uib-tooltip="Show single-band style settings"
 	  tooltip-placement="left"
 	  tooltip-trigger="mouseenter"
       tooltip-append-to-body="true">photo</i>
-	<i ng-click="showMultiBand()" ng-show="navInfo.singleBandSldView"
+	<i ng-click="showMultiBand()" ng-show="editorSld.singleband"
 	  class="material-icons sldButton sldHeaderButton"
 	  aria-label="Show multi-band style settings"
 	  uib-tooltip="Show multi-band style settings"
@@ -22,9 +22,17 @@
   <label id="sldMenuLabel" for="sldmenu">Choose existing template:</label>
   <select name="sldmenu" id="sldmenu" ng-model="editorSldName" ng-options="sld.name for sld in slds" ng-change="sldSelectionChanged()">
   </select>
+  <i ng-click="deleteSld()" ng-show="!editorSld.builtin"
+			class="material-icons sldButton"
+			aria-label="Delete template"
+			uib-tooltip="Delete template"
+			tooltip-placement="left"
+			tooltip-trigger="mouseenter"
+			tooltip-append-to-body="true">delete</i>
+
   <div id="sldEditTitle">Customize style</div>
   
-    <div id="singleBandSelectionDiv" ng-if="navInfo.singleBandSldView">
+    <div id="singleBandSelectionDiv" ng-if="editorSld.singleband">
 	  <table id="singleBandTable" class="channelSelectionTable">
 		<tr class="channelSelectionTableHeaderTR">
 		  <th class="channelSelection channelSelectionLabelTH"></th>
@@ -110,7 +118,7 @@
 	</div>
   </div>
   
-  <div id="multiBandSelectionDiv" ng-if="navInfo.multiBandSldView">
+  <div id="multiBandSelectionDiv" ng-if="!editorSld.singleband">
 	  <table id="singleBandTable" class="channelSelectionTable">
 		<tr class="channelSelectionTableHeaderTR">
 		  <th class="channelSelection channelSelectionLabelTH"></th>

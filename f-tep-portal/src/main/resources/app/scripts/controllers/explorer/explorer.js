@@ -135,12 +135,10 @@ define(['../../ftepmodules'], function (ftepmodules) {
             $scope.editorSld = undefined;
         };
         $scope.showSingleBand = function() {
-			$scope.navInfo.multiBandSldView = false;
-			$scope.navInfo.singleBandSldView = true;
+			$scope.editorSld.singleband = true;
         };
         $scope.showMultiBand = function() {
-			$scope.navInfo.multiBandSldView = true;
-			$scope.navInfo.singleBandSldView = false;
+			$scope.editorSld.singleband = false;
         };
 
         $scope.newSldRowBelow = function($event) {
@@ -165,7 +163,7 @@ define(['../../ftepmodules'], function (ftepmodules) {
         /** Parse SLD from the SLD view values **/
         parseSld = function() {
 			let sld = { 'name': '', channelselection:{} };
-			if ($scope.navInfo.singleBandSldView) {
+			if ($scope.editorSld.singleband) {
 				sld.singleband = true;
 				let grayBand = document.getElementById('sldgrayband').value;
 				let grayMin = document.getElementById('sldgraybandmin').value;
@@ -246,6 +244,7 @@ define(['../../ftepmodules'], function (ftepmodules) {
             let sld = parseSld();
             $scope.navInfo.sldViewItem.sld = sld;
             $scope.editorSld = JSON.parse(JSON.stringify(sld));
+			$scope.editorSldName = '';
 
             $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
         };
@@ -253,6 +252,9 @@ define(['../../ftepmodules'], function (ftepmodules) {
         $scope.saveSld = function() {
 			let name = window.prompt("Please give name for the saved custom style. Using an existing name overwrites the old style.", "");
 			//console.log(name);
+			if (name == null) {
+				return;
+			}
 			if (name == $scope.defaultSld.name) {
 				window.alert('Default style cannot be overdriven, please select another name!');
 			} else if (name == '') {
@@ -269,8 +271,24 @@ define(['../../ftepmodules'], function (ftepmodules) {
 				customSlds[sld.name] = sld;
 				localStorage.setItem('slds', JSON.stringify(customSlds));
 				$scope.slds = MapService.getSlds();
+				$scope.editorSldName = name; // To select the saved SLD from dropdown 
 			}
         }
+		$scope.deleteSld = function() {
+			if ($scope.editorSld) {
+				if ($scope.editorSld.builtin) {
+					window.alert('Built-in styles cannot be deleted');
+				} else {
+					let customSlds = localStorage.getItem('slds');
+					if (customSlds) { 
+						customSlds = JSON.parse(customSlds);
+						delete customSlds[$scope.editorSld.name];
+						localStorage.setItem('slds', JSON.stringify(customSlds));
+						$scope.slds = MapService.getSlds();
+					}
+				}
+			}
+		}
 
         /** WMS layer show/hide option for Product Search result items **/
         $scope.visibleWmsList = [];

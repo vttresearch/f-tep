@@ -31,7 +31,7 @@ define(['../ftepmodules', 'ol'], function (ftepmodules, ol) {
 
         var rootUri = ftepProperties.FTEP_URL;
 
-        this.defaultSld = { 'id':0, 'name':'default', 'channelselection': { 'gray':1 }, 'singleband':true, 'colormap':[] };
+        this.defaultSld = { 'id':0, 'name':'default', 'channelselection': { 'gray':1 }, 'singleband':true, 'colormap':[], 'builtin':true };
 		
         this.updateDefaultSlds = function(parent) {
             return $http({
@@ -42,6 +42,7 @@ define(['../ftepmodules', 'ol'], function (ftepmodules, ol) {
                 //console.log(response.data);
                 let slds = [ parent.defaultSld ];
                 for (var i=0; i<response.data.slds.length; i++) {
+				  response.data.slds[i].builtin = true;
                   slds.push(response.data.slds[i]);
                 }
                 //console.log(slds);
