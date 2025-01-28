@@ -157,11 +157,14 @@ define(['../../ftepmodules'], function (ftepmodules) {
             $scope.editorSld.colormap.splice(index, 1);
 			//console.log($scope.editorSld);
         }
+		$scope.addColormapTemplate = function() {
+            $scope.editorSld.colormap.push({ 'quantity':0,'color':'#FFFFFF' });
+            $scope.editorSld.colormap.push({ 'quantity':255,'color':'#000000' });
+		}
 
         /** Parse SLD from the SLD view values **/
         parseSld = function() {
-            let name = document.getElementById('sldname').value;
-			let sld = { 'name': name, channelselection:{} };
+			let sld = { 'name': '', channelselection:{} };
 			if ($scope.navInfo.singleBandSldView) {
 				sld.singleband = true;
 				let grayBand = document.getElementById('sldgrayband').value;
@@ -228,33 +231,32 @@ define(['../../ftepmodules'], function (ftepmodules) {
             return sld;
         }
 
+		// Populate the style editor view with stored values
         $scope.sldSelectionChanged = function() {
 			//console.log($scope.editorSld);
 			let dropdown = document.getElementById('sldmenu');
 			//console.log(dropdown.selectedIndex);
 			//console.log($scope.slds[dropdown.selectedIndex]);
-            $scope.navInfo.sldViewItem.sld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
+            //$scope.navInfo.sldViewItem.sld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
             $scope.editorSld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
 			$scope.editorSldName = $scope.editorSld.name;
-
-            $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
 		}
 
         $scope.applySld = function() {
             let sld = parseSld();
-			sld.name = '';
             $scope.navInfo.sldViewItem.sld = sld;
             $scope.editorSld = JSON.parse(JSON.stringify(sld));
-			$scope.editorSldName = $scope.editorSld.name;
 
             $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
         };
 
         $scope.saveSld = function() {
-			let name = document.getElementById('sldname').value;
+			let name = window.prompt("Please give name for the saved custom style. Using an existing name overwrites the old style.", "");
 			//console.log(name);
 			if (name == $scope.defaultSld.name) {
 				window.alert('Default style cannot be overdriven, please select another name!');
+			} else if (name == '') {
+				window.alert('Name cannot be empty!');
 			} else {
 				let sld = parseSld();
 				let customSlds = localStorage.getItem('slds');

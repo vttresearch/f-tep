@@ -1,20 +1,80 @@
 <article id="bottombar">
 
     <div id="bottombar-tabs" class="col-xs-12 no-padding">
+	
 <div id="sldPanel" ng-if="navInfo.sldViewVisible">
-  <div id="sldViewTitle">Style Editor</div>
-  <label id="sldMenuLabel" for="sldmenu">Choose existing style:</label>
+  <div id="sldViewTitle">STYLE EDITOR
+    <i ng-click="showSingleBand()" ng-show="navInfo.multiBandSldView"
+	  class="material-icons sldButton sldHeaderButton"
+	  aria-label="Show single-band style settings"
+	  uib-tooltip="Show single-band style settings"
+	  tooltip-placement="left"
+	  tooltip-trigger="mouseenter"
+      tooltip-append-to-body="true">photo</i>
+	<i ng-click="showMultiBand()" ng-show="navInfo.singleBandSldView"
+	  class="material-icons sldButton sldHeaderButton"
+	  aria-label="Show multi-band style settings"
+	  uib-tooltip="Show multi-band style settings"
+	  tooltip-placement="left"
+	  tooltip-trigger="mouseenter"
+      tooltip-append-to-body="true">photo_library</i>
+  </div>
+  <label id="sldMenuLabel" for="sldmenu">Choose existing template:</label>
   <select name="sldmenu" id="sldmenu" ng-model="editorSldName" ng-options="sld.name for sld in slds" ng-change="sldSelectionChanged()">
   </select>
-  <div id="sldEditTitle">Customize style:</div>
+  <div id="sldEditTitle">Customize style</div>
   
-  <div id="singleBandSelectionDiv" ng-if="navInfo.singleBandSldView">
-	<label id="sldGrayBandLabel" for="sldgrayband">Use band:</label>
-	<input ng-model="editorSld.channelselection.gray" id="sldgrayband" name="sldgrayband" type="number"></input>
-	<label id="sldGrayBandMinLabel" for="sldgraybandmin">Minimum band value:</label>
-	<input ng-model="editorSld.channelselection.graymin" id="sldgraybandmin" name="sldgraybandmin" type="number"></input>
-	<label id="sldGrayBandMaxLabel" for="sldgraybandmax">Maximum band value:</label>
-	<input ng-model="editorSld.channelselection.graymax" id="sldgraybandmax" name="sldgraybandmax" type="number"></input>
+    <div id="singleBandSelectionDiv" ng-if="navInfo.singleBandSldView">
+	  <table id="singleBandTable" class="channelSelectionTable">
+		<tr class="channelSelectionTableHeaderTR">
+		  <th class="channelSelection channelSelectionLabelTH"></th>
+		  <th class="channelSelection channelSelectionBandTH">Band number</th>
+		  <th class="channelSelection channelSelectionMinTH">Minimum value</th>
+		  <th class="channelSelection channelSelectionMaxTH">Maximum value</th>
+		  <th></th>
+		</tr>
+		<tr class="channelSelectionTableDataTR">
+		  <td class="channelSelection channelSelectionLabelTD">Gray</td>
+		  <td class="channelSelection channelSelectionBandTD">
+		    <input class="channelSelectionBandInput" ng-model="editorSld.channelselection.gray" id="sldgrayband" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMinTD">
+		    <input class="channelSelectionMinInput" ng-model="editorSld.channelselection.graymin" id="sldgraybandmin" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMaxTD">
+		    <input class="channelSelectionMaxInput" ng-model="editorSld.channelselection.graymax" id="sldgraybandmax" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionButtonTD">
+			<i ng-click="addColormapTemplate()" ng-if="editorSld.colormap.length == 0"
+			class="material-icons sldButton"
+			aria-label="Add colormap template"
+			uib-tooltip="Add colormap template"
+			tooltip-placement="left"
+			tooltip-trigger="mouseenter"
+			tooltip-append-to-body="true">add</i>
+			<i ng-click="applySld()"
+			class="material-icons sldButton"
+			aria-label="Apply settings"
+			uib-tooltip="Apply settings"
+			tooltip-placement="left"
+			tooltip-trigger="mouseenter"
+			tooltip-append-to-body="true">sync</i>		  
+			<i ng-click="saveSld()" 
+			class="material-icons sldButton"
+			aria-label="Save settings"
+			uib-tooltip="Save settings"
+			tooltip-placement="left"
+			tooltip-trigger="mouseenter"
+			tooltip-append-to-body="true">save</i>
+		  </td>
+		</tr>
+	  </table>
+
+	  <div id="singleBandInfo">If band limits are used define colormap for interval 0-255. Define both lower and upper limits.</div>
+
+	<div id="sldColorMapDiv" ng-show="editorSld.colormap.length > 0">
+	
+    <div id="sldColormapTitle">Customize colormap</div>
 
 	<div id="sldTableDiv">
 	  <table id="sldTable">
@@ -47,49 +107,74 @@
 		</tr>
 	  </table>
 	</div>
-	<p>
-    <button ng-click="showMultiBand()">Switch to multi-band view</button>
+	</div>
   </div>
   
   <div id="multiBandSelectionDiv" ng-if="navInfo.multiBandSldView">
-	<label id="sldRedBandLabel" for="sldsingleband">Red band:</label>
-	<input ng-model="editorSld.channelselection.red" id="sldredband" name="sldredband" type="number"></input>
-	<label id="sldRedBandMinLabel" for="sldsinglebandmin">Minimum band value:</label>
-	<input ng-model="editorSld.channelselection.redmin" id="sldredbandmin" name="sldredbandmin" type="number"></input>
-	<label id="sldRedBandMaxLabel" for="sldsinglebandmax">Maximum band value:</label>
-	<input ng-model="editorSld.channelselection.redmax" id="sldredbandmax" name="sldredbandmax" type="number"></input>
-	<br>
-	<label id="sldGreenBandLabel" for="sldsingleband">Green band:</label>
-	<input ng-model="editorSld.channelselection.green" id="sldgreenband" name="sldgreenband" type="number"></input>
-	<label id="sldGreenBandMinLabel" for="sldsinglebandmin">Minimum band value:</label>
-	<input ng-model="editorSld.channelselection.greenmin" id="sldgreenbandmin" name="sldgreenbandmin" type="number"></input>
-	<label id="sldGreenBandMaxLabel" for="sldsinglebandmax">Maximum band value:</label>
-	<input ng-model="editorSld.channelselection.greenmax" id="sldgreenbandmax" name="sldgreenbandmax" type="number"></input>
-	<br>
-	<label id="sldBlueBandLabel" for="sldsingleband">Blue band:</label>
-	<input ng-model="editorSld.channelselection.blue" id="sldblueband" name="sldblueband" type="number"></input>
-	<label id="sldBlueBandMinLabel" for="sldsinglebandmin">Minimum band value:</label>
-	<input ng-model="editorSld.channelselection.bluemin" id="sldbluebandmin" name="sldbluebandmin" type="number"></input>
-	<label id="sldBlueBandMaxLabel" for="sldsinglebandmax">Maximum band value:</label>
-	<input ng-model="editorSld.channelselection.bluemax" id="sldbluebandmax" name="sldbluebandmax" type="number"></input>
-	<p>
-    <button ng-click="showSingleBand()">Switch to single-band view</button>
+	  <table id="singleBandTable" class="channelSelectionTable">
+		<tr class="channelSelectionTableHeaderTR">
+		  <th class="channelSelection channelSelectionLabelTH"></th>
+		  <th class="channelSelection channelSelectionBandTH">Band number</th>
+		  <th class="channelSelection channelSelectionMinTH">Minimum value</th>
+		  <th class="channelSelection channelSelectionMaxTH">Maximum value</th>
+		  <th></th>
+		</tr>
+		<tr class="channelSelectionTableDataTR">
+		  <td class="channelSelection channelSelectionLabelTD">Red</td>
+		  <td class="channelSelection channelSelectionBandTD">
+		    <input class="channelSelectionBandInput" ng-model="editorSld.channelselection.red" id="sldredband" name="sldredband" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMinTD">
+		    <input class="channelSelectionMinInput" ng-model="editorSld.channelselection.redmin" id="sldredbandmin" name="sldredbandmin" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMaxTD">
+		    <input class="channelSelectionMaxInput" ng-model="editorSld.channelselection.redmax" id="sldredbandmax" name="sldredbandmax" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionButtonTD" rowspan="3">
+	        <i ng-click="applySld()"
+			class="material-icons sldButton"
+			aria-label="Apply settings"
+			uib-tooltip="Apply settings"
+			tooltip-placement="left"
+			tooltip-trigger="mouseenter"
+			tooltip-append-to-body="true">sync</i>
+			<i ng-click="saveSld()" 
+			class="material-icons sldButton"
+			aria-label="Save settings"
+			uib-tooltip="Save settings"
+			tooltip-placement="left"
+			tooltip-trigger="mouseenter"
+			tooltip-append-to-body="true">save</i>
+		  </td>
+		</tr>
+		<tr class="channelSelectionTableDataTR">
+		  <td class="channelSelection channelSelectionLabelTD">Green</td>
+		  <td class="channelSelection channelSelectionBandTD">
+		    <input class="channelSelectionBandInput" ng-model="editorSld.channelselection.green" id="sldgreenband" name="sldgreenband" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMinTD">
+		    <input class="channelSelectionMinInput" ng-model="editorSld.channelselection.greenmin" id="sldgreenbandmin" name="sldgreenbandmin" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMaxTD">
+		    <input class="channelSelectionMaxInput" ng-model="editorSld.channelselection.greenmax" id="sldgreenbandmax" name="sldgreenbandmax" type="number"></input>
+		  </td>
+		</tr>
+		<tr class="channelSelectionTableDataTR">
+		  <td class="channelSelection channelSelectionLabelTD">Blue</td>
+		  <td class="channelSelection channelSelectionBandTD">
+		    <input class="channelSelectionBandInput" ng-model="editorSld.channelselection.blue" id="sldblueband" name="sldblueband" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMinTD">
+		    <input class="channelSelectionMinInput" ng-model="editorSld.channelselection.bluemin" id="sldbluebandmin" name="sldbluebandmin" type="number"></input>
+		  </td>
+		  <td class="channelSelection channelSelectionMaxTD">
+		    <input class="channelSelectionMaxInput" ng-model="editorSld.channelselection.bluemax" id="sldbluebandmax" name="sldbluebandmax" type="number"></input>
+		  </td>
+		</tr>
+	  </table>
+	  <div id="multiBandInfo">If limits are used they must be defined for all three bands. Define both lower and upper limits.</div>
   </div>
-  
-  <div id="sldNameDiv"
-                   aria-label="Name for the saved custom style. Using an existing name overwrites the old style."
-                   uib-tooltip="Name for the saved custom style. Using an existing name overwrites the old style."
-                   tooltip-placement="left"
-                   tooltip-trigger="mouseenter"
-                   tooltip-append-to-body="true">
-	<label id="sldNameLabel" for="sldname">Save style as:</label><input id="sldname" name="sldname" type="text"></input>
-  </div>
-  
-  <div id="sldButtonDiv">
-    <button type="button" ng-click="applySld()">Apply</button>
-	<button type="button" ng-click="hideSldView()">Close</button>
-	<button type="button" ng-click="saveSld()">Save</button>
-  </div>
+
 </div>
 
         <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
@@ -149,6 +234,17 @@
     </div>
 
     <div id="bottombar-expand">
+	<md-button class="toolbar-button"
+               ng-show="navInfo.sldViewVisible"
+			   ng-click="hideSldView()"
+			   aria-label="Close"
+			   uib-tooltip="Close"
+			   tooltip-placement="left"
+			   tooltip-trigger="mouseenter"
+			   tooltip-append-to-body="true">
+		<i class="material-icons">close</i>
+	</md-button>
+
         <md-button class="toolbar-button"
                    ng-show="!bottombarTall"
                    ng-click="toggleBottombarHeight()"
@@ -172,6 +268,7 @@
         </md-button>
 
         <md-button class="toolbar-button"
+               ng-show="!navInfo.sldViewVisible"
                    ng-click="toggleBottomView()"
                    aria-label="Close"
                    uib-tooltip="Close"
