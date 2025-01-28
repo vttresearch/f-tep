@@ -121,6 +121,11 @@ define(['../../ftepmodules'], function (ftepmodules) {
         $scope.openSldView = function(item) {
             $scope.navInfo.sldViewItem = item.properties;
             $scope.editorSld = JSON.parse(JSON.stringify(item.properties.sld));
+			if (item.properties.sld.singleband) {
+			  $scope.showSingleBand();
+			} else {
+			  $scope.showMultiBand();
+			}
 			$scope.editorSldName = item.properties.sld.name;
             $scope.navInfo.sldViewVisible = true;
         };
@@ -128,6 +133,14 @@ define(['../../ftepmodules'], function (ftepmodules) {
             $scope.navInfo.sldViewVisible = false;
             $scope.navInfo.sldViewItem = undefined;
             $scope.editorSld = undefined;
+        };
+        $scope.showSingleBand = function() {
+			$scope.navInfo.multiBandSldView = false;
+			$scope.navInfo.singleBandSldView = true;
+        };
+        $scope.showMultiBand = function() {
+			$scope.navInfo.multiBandSldView = true;
+			$scope.navInfo.singleBandSldView = false;
         };
 
         $scope.newSldRowBelow = function($event) {
@@ -140,21 +153,79 @@ define(['../../ftepmodules'], function (ftepmodules) {
         }
         $scope.deleteSldRow = function($event) {
             let index = $event.currentTarget.parentNode.rowIndex - 1; // -1 because of header row
-			console.log(index);
+			//console.log(index);
             $scope.editorSld.colormap.splice(index, 1);
-			console.log($scope.editorSld);
+			//console.log($scope.editorSld);
         }
 
         /** Parse SLD from the SLD view values **/
         parseSld = function() {
-            let table = document.getElementById('sldTable');
-            let quantityInputs = table.getElementsByClassName('sldQuantityInput');
-            let colorInputs = table.getElementsByClassName('sldColorInput');
-            let cm = [];
-            for (let i=0; i<quantityInputs.length; i++) {
-                cm.push({ 'quantity':quantityInputs[i].value, 'color':colorInputs[i].value });
-            }
-            return { 'name':'test', 'colormap':cm };
+            let name = document.getElementById('sldname').value;
+			let sld = { 'name': name, channelselection:{} };
+			if ($scope.navInfo.singleBandSldView) {
+				sld.singleband = true;
+				let grayBand = document.getElementById('sldgrayband').value;
+				let grayMin = document.getElementById('sldgraybandmin').value;
+				let grayMax = document.getElementById('sldgraybandmax').value;
+				if (grayBand != '') {
+					sld.channelselection.gray = parseInt(grayBand);
+					if (grayMin != '') {
+						sld.channelselection.graymin = parseInt(grayMin);
+					}
+					if (grayMax != '') {
+						sld.channelselection.graymax = parseInt(grayMax);
+					}
+				}
+			
+				let table = document.getElementById('sldTable');
+				let quantityInputs = table.getElementsByClassName('sldQuantityInput');
+				let colorInputs = table.getElementsByClassName('sldColorInput');
+				let cm = [];
+				for (let i=0; i<quantityInputs.length; i++) {
+					cm.push({ 'quantity':quantityInputs[i].value, 'color':colorInputs[i].value });
+				}
+				sld.colormap = cm;
+			} else {
+				sld.singleband = false;
+				let redBand = document.getElementById('sldredband').value;
+				let redMin = document.getElementById('sldredbandmin').value;
+				let redMax = document.getElementById('sldredbandmax').value;
+				if (redBand != '') {
+					sld.channelselection.red = parseInt(redBand);
+					if (redMin != '') {
+						sld.channelselection.redmin = parseInt(redMin);
+					}
+					if (redMax != '') {
+						sld.channelselection.redmax = parseInt(redMax);
+					}
+				}
+				let greenBand = document.getElementById('sldgreenband').value;
+				let greenMin = document.getElementById('sldgreenbandmin').value;
+				let greenMax = document.getElementById('sldgreenbandmax').value;
+				if (greenBand != '') {
+					sld.channelselection.green = parseInt(greenBand);
+					if (greenMin != '') {
+						sld.channelselection.greenmin = parseInt(greenMin);
+					}
+					if (greenMax != '') {
+						sld.channelselection.greenmax = parseInt(greenMax);
+					}
+				}
+				let blueBand = document.getElementById('sldblueband').value;
+				let blueMin = document.getElementById('sldbluebandmin').value;
+				let blueMax = document.getElementById('sldbluebandmax').value;
+				if (blueBand != '') {
+					sld.channelselection.blue = parseInt(blueBand);
+					if (blueMin != '') {
+						sld.channelselection.bluemin = parseInt(blueMin);
+					}
+					if (blueMax != '') {
+						sld.channelselection.bluemax = parseInt(blueMax);
+					}
+				}
+			}
+			
+            return sld;
         }
 
         $scope.sldSelectionChanged = function() {
@@ -181,7 +252,7 @@ define(['../../ftepmodules'], function (ftepmodules) {
 
         $scope.saveSld = function() {
 			let name = document.getElementById('sldname').value;
-			console.log(name);
+			//console.log(name);
 			if (name == $scope.defaultSld.name) {
 				window.alert('Default style cannot be overdriven, please select another name!');
 			} else {
@@ -205,10 +276,12 @@ define(['../../ftepmodules'], function (ftepmodules) {
         /* Toggles display of a wms item */
         $scope.toggleSearchResWMS = function ($event, item, show, sld) {
             if (show) {
-                if (sld == undefined) {
-                    sld = $scope.defaultSld;
+                if (sld == undefined && item.properties.sld == undefined) {
+                    sld = JSON.parse(JSON.stringify($scope.defaultSld));
                 }
-                item.properties.sld = sld;
+				if (sld) {
+                    item.properties.sld = sld;
+				}
                 $scope.visibleWmsList.push(item.properties);
             } else {
                 var index = $scope.visibleWmsList.indexOf(item.properties);

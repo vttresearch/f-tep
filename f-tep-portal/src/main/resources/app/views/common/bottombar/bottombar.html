@@ -7,37 +7,75 @@
   <select name="sldmenu" id="sldmenu" ng-model="editorSldName" ng-options="sld.name for sld in slds" ng-change="sldSelectionChanged()">
   </select>
   <div id="sldEditTitle">Customize style:</div>
-  <div id="sldTableDiv">
-  <table id="sldTable">
-    <tr class="sldHeaderRow">
-      <th class="sldHeaderCell">Pixel value</th>
-      <th class="sldHeaderCell">Color</th>
-      <th></th>
-    </tr>
-    <tr class="sldDataRow" ng-repeat="cm in editorSld.colormap">
-      <td class="sldDataCell"><input class="sldQuantityInput" type="number" value="{{cm.quantity}}"></td>
-      <td class="sldDataCell"><input class="sldColorInput" type="color" value="{{cm.color}}"></td>
-      <td class="sldButtonCell" ng-click="newSldRowBelow($event)"
-                   aria-label="Add row below"
-                   uib-tooltip="Add row below"
-                   tooltip-placement="left"
-                   tooltip-trigger="mouseenter"
-                   tooltip-append-to-body="true"><i class="material-icons">vertical_align_bottom</i></td>
-      <td class="sldButtonCell" ng-click="newSldRowAbove($event)"
-                   aria-label="Add row above"
-                   uib-tooltip="Add row above"
-                   tooltip-placement="left"
-                   tooltip-trigger="mouseenter"
-                   tooltip-append-to-body="true"><i class="material-icons">vertical_align_top</i></td>
-      <td class="sldButtonCell" ng-click="deleteSldRow($event)"
-                   aria-label="Delete row"
-                   uib-tooltip="Delete row"
-                   tooltip-placement="left"
-                   tooltip-trigger="mouseenter"
-                   tooltip-append-to-body="true"><i class="material-icons">clear</i></td>
-    </tr>
-  </table>
+  
+  <div id="singleBandSelectionDiv" ng-if="navInfo.singleBandSldView">
+	<label id="sldGrayBandLabel" for="sldgrayband">Use band:</label>
+	<input ng-model="editorSld.channelselection.gray" id="sldgrayband" name="sldgrayband" type="number"></input>
+	<label id="sldGrayBandMinLabel" for="sldgraybandmin">Minimum band value:</label>
+	<input ng-model="editorSld.channelselection.graymin" id="sldgraybandmin" name="sldgraybandmin" type="number"></input>
+	<label id="sldGrayBandMaxLabel" for="sldgraybandmax">Maximum band value:</label>
+	<input ng-model="editorSld.channelselection.graymax" id="sldgraybandmax" name="sldgraybandmax" type="number"></input>
+
+	<div id="sldTableDiv">
+	  <table id="sldTable">
+		<tr class="sldHeaderRow">
+		  <th class="sldHeaderCell">Pixel value</th>
+		  <th class="sldHeaderCell">Color</th>
+		  <th></th>
+		</tr>
+		<tr class="sldDataRow" ng-repeat="cm in editorSld.colormap">
+		  <td class="sldDataCell"><input class="sldQuantityInput" type="number" value="{{cm.quantity}}"></td>
+		  <td class="sldDataCell"><input class="sldColorInput" type="color" value="{{cm.color}}"></td>
+		  <td class="sldButtonCell" ng-click="newSldRowBelow($event)"
+					   aria-label="Add row below"
+					   uib-tooltip="Add row below"
+					   tooltip-placement="left"
+					   tooltip-trigger="mouseenter"
+					   tooltip-append-to-body="true"><i class="material-icons">vertical_align_bottom</i></td>
+		  <td class="sldButtonCell" ng-click="newSldRowAbove($event)"
+					   aria-label="Add row above"
+					   uib-tooltip="Add row above"
+					   tooltip-placement="left"
+					   tooltip-trigger="mouseenter"
+					   tooltip-append-to-body="true"><i class="material-icons">vertical_align_top</i></td>
+		  <td class="sldButtonCell" ng-click="deleteSldRow($event)"
+					   aria-label="Delete row"
+					   uib-tooltip="Delete row"
+					   tooltip-placement="left"
+					   tooltip-trigger="mouseenter"
+					   tooltip-append-to-body="true"><i class="material-icons">clear</i></td>
+		</tr>
+	  </table>
+	</div>
+	<p>
+    <button ng-click="showMultiBand()">Switch to multi-band view</button>
   </div>
+  
+  <div id="multiBandSelectionDiv" ng-if="navInfo.multiBandSldView">
+	<label id="sldRedBandLabel" for="sldsingleband">Red band:</label>
+	<input ng-model="editorSld.channelselection.red" id="sldredband" name="sldredband" type="number"></input>
+	<label id="sldRedBandMinLabel" for="sldsinglebandmin">Minimum band value:</label>
+	<input ng-model="editorSld.channelselection.redmin" id="sldredbandmin" name="sldredbandmin" type="number"></input>
+	<label id="sldRedBandMaxLabel" for="sldsinglebandmax">Maximum band value:</label>
+	<input ng-model="editorSld.channelselection.redmax" id="sldredbandmax" name="sldredbandmax" type="number"></input>
+	<br>
+	<label id="sldGreenBandLabel" for="sldsingleband">Green band:</label>
+	<input ng-model="editorSld.channelselection.green" id="sldgreenband" name="sldgreenband" type="number"></input>
+	<label id="sldGreenBandMinLabel" for="sldsinglebandmin">Minimum band value:</label>
+	<input ng-model="editorSld.channelselection.greenmin" id="sldgreenbandmin" name="sldgreenbandmin" type="number"></input>
+	<label id="sldGreenBandMaxLabel" for="sldsinglebandmax">Maximum band value:</label>
+	<input ng-model="editorSld.channelselection.greenmax" id="sldgreenbandmax" name="sldgreenbandmax" type="number"></input>
+	<br>
+	<label id="sldBlueBandLabel" for="sldsingleband">Blue band:</label>
+	<input ng-model="editorSld.channelselection.blue" id="sldblueband" name="sldblueband" type="number"></input>
+	<label id="sldBlueBandMinLabel" for="sldsinglebandmin">Minimum band value:</label>
+	<input ng-model="editorSld.channelselection.bluemin" id="sldbluebandmin" name="sldbluebandmin" type="number"></input>
+	<label id="sldBlueBandMaxLabel" for="sldsinglebandmax">Maximum band value:</label>
+	<input ng-model="editorSld.channelselection.bluemax" id="sldbluebandmax" name="sldbluebandmax" type="number"></input>
+	<p>
+    <button ng-click="showSingleBand()">Switch to single-band view</button>
+  </div>
+  
   <div id="sldNameDiv"
                    aria-label="Name for the saved custom style. Using an existing name overwrites the old style."
                    uib-tooltip="Name for the saved custom style. Using an existing name overwrites the old style."
@@ -46,12 +84,14 @@
                    tooltip-append-to-body="true">
 	<label id="sldNameLabel" for="sldname">Save style as:</label><input id="sldname" name="sldname" type="text"></input>
   </div>
+  
   <div id="sldButtonDiv">
     <button type="button" ng-click="applySld()">Apply</button>
 	<button type="button" ng-click="hideSldView()">Close</button>
 	<button type="button" ng-click="saveSld()">Save</button>
   </div>
 </div>
+
         <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
 
             <section ng-controller="ResultsCtrl" ng-if="navInfo.activeTab == tabs.EXPLORER">
