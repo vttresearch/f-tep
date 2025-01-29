@@ -99,10 +99,21 @@
                 {{outputFile.uri}}
             </div>
 <div>
+			<md-button class="toolbar-button md-secondary icon-button-accent"
+				ng-show="hasWmsLink(outputFile) && isWmsVisible(outputFile)"
+				ng-click="openJobOutputSldView(outputFile) && $event.stopPropagation()"
+				aria-label="Adjust Style"
+				uib-tooltip="Adjust Style"
+				tooltip-placement="top"
+				tooltip-trigger="mouseenter"
+				tooltip-append-to-body="true">
+				<i class="material-icons">image</i>
+			</md-button>
+
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-show="hasWmsLink(outputFile) && !isWmsVisible(outputFile)"
-                       ng-click="toggleSldMenu(outputFile); $event.stopPropagation()"
-                       uib-tooltip="Show WMS Layer"
+                       ng-click="toggleWMS(outputFile, true); $event.stopPropagation()"
+                       uib-tooltip="Show Image Layer"
                        tooltip-placement="top"
                        tooltip-trigger="mouseenter"
                        tooltip-append-to-body="true">
@@ -112,19 +123,12 @@
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-show="hasWmsLink(outputFile) && isWmsVisible(outputFile)"
                        ng-click="toggleWMS(outputFile, false); $event.stopPropagation()"
-                       uib-tooltip="Hide WMS Layer"
+                       uib-tooltip="Hide Image Layer"
                        tooltip-placement="top"
                        tooltip-trigger="mouseenter"
                        tooltip-append-to-body="true">
                 <i class="material-icons">layers_clear</i>
             </md-button>
-<div class="sldmenu" ng-show="sldMenuShowing(outputFile)" ng-mouseleave="hideSldMenu(outputFile)">
-  <div class="sldmenuitem" ng-click="toggleWMS(outputFile, true); hideSldMenu(outputFile); $event.stopPropagation()">Default</div>
-  <div class="sldmenuitem"
-    ng-repeat="sld in slds"
-    ng-click="toggleWMS(outputFile, true, sld.colormap); hideSldMenu(outputFile); $event.stopPropagation()"
-  >{{sld.name}}</div>
-</div>
 </div>
 
             <md-button class="toolbar-button md-secondary icon-button-accent"

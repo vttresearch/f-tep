@@ -127,7 +127,13 @@ define(['../../../ftepmodules'], function (ftepmodules) {
             $scope.navInfo.sldViewItem.sld = sld;
             $scope.editorSld = JSON.parse(JSON.stringify(sld));
 
-            $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
+			if ($scope.navInfo.sldViewItem.owner == undefined) {
+				// Search result
+				$rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
+			} else {
+				// Job output file
+				$rootScope.$broadcast('update.wmslayer', $scope.jobParams.wms.visibleList);
+			}
         };
 
         $scope.saveSld = function() {

@@ -8,7 +8,7 @@
 define(['../../../ftepmodules'], function (ftepmodules) {
     'use strict';
 
-    ftepmodules.controller('JobsCtrl', ['$scope', '$rootScope', '$location', 'CommonService', 'JobService', '$sce', 'TabService', function ($scope, $rootScope, $location, CommonService, JobService, $sce, TabService) {
+    ftepmodules.controller('JobsCtrl', ['$scope', '$rootScope', '$location', 'CommonService', 'JobService', '$sce', 'TabService', 'MapService', function ($scope, $rootScope, $location, CommonService, JobService, $sce, TabService, MapService) {
 
         $scope.jobParams = JobService.params.explorer;
         $scope.jobOwnershipFilters = JobService.jobOwnershipFilters;
@@ -114,13 +114,25 @@ define(['../../../ftepmodules'], function (ftepmodules) {
             $rootScope.$broadcast('update.wmslayer',  $scope.jobParams.wms.visibleList);
         };
 
+		$scope.defaultSld = MapService.defaultSld;
+
+        $scope.navInfo = TabService.navInfo.explorer;
+		if ($scope.navInfo.joboutput) {
+			$scope.jobTab = 'OUTPUTS';
+			JobService.fetchJobOutputs('explorer');
+		}
+
+        $scope.openJobOutputSldView = function(item) {
+            $scope.navInfo.sldViewItem = item;
+            $scope.navInfo.sldViewVisible = true;
+            $scope.navInfo.joboutput = true;
+        };
+
         /* Toggles display of a wms item */
-        $scope.toggleWMS = function (file, show, colormap) {
+        $scope.toggleWMS = function (file, show) {
             if (show) {
-                if (colormap && Array.isArray(colormap)) {
-                    file.sld = { 'colormap':colormap };
-                } else {
-                    delete file.sld;
+                if (file.sld == undefined) {
+                    file.sld = JSON.parse(JSON.stringify($scope.defaultSld));
                 }
                 $scope.jobParams.wms.visibleList.push(file);
             } else {

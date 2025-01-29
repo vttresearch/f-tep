@@ -20,7 +20,6 @@
 <label id="sldMenuLabel" for="sldmenu">Choose existing template:</label>
 <select name="sldmenu" id="sldmenu" ng-model="templateSld" ng-options="sld.name for sld in slds track by sld.name" ng-change="sldSelectionChanged()">
 </select>
-{{templateSld}}
 <i ng-click="deleteSld()" ng-show="!templateSld.builtin" 
 	class="material-icons sldButton" 
 	aria-label="Delete template" 

@@ -115,12 +115,12 @@ define(['../../ftepmodules'], function (ftepmodules) {
         $scope.openSldView = function(item) {
             $scope.navInfo.sldViewItem = item.properties;
             $scope.navInfo.sldViewVisible = true;
+			$scope.navInfo.joboutput = undefined;
         };
 
         $scope.hideSldView = function() {
             $scope.navInfo.sldViewVisible = false;
             $scope.navInfo.sldViewItem = undefined;
-            $scope.editorSld = undefined;
         };
 
         /** WMS layer show/hide option for Product Search result items **/
