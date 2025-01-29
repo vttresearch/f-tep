@@ -43,7 +43,8 @@ define(['../ftepmodules'], function (ftepmodules) {
                 activeSideNav: undefined,
                 activeBottomNav: bottomNavTabs.RESULTS,
                 resultTabNameExtention: '',
-                bottomViewVisible: false
+                bottomViewVisible: false,
+                sldViewVisible: false
             },
             files: {
                 activeTab: tabs.FILES,

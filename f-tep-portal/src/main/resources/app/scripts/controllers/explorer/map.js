@@ -761,6 +761,100 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
         /** ----- END OF BASKET LAYER ----- **/
 
         /* ----- WMS LAYER ----- */
+
+        function createSLD(layerName, sld) {
+          let sldString = '<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><StyledLayerDescriptor version=\"1.0.0\" xsi:schemaLocation=\"http://www.opengis.net/sld StyledLayerDescriptor.xsd\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><NamedLayer><Name>';
+          sldString += layerName;
+          sldString += '</Name><UserStyle><Title>SLD</Title><IsDefault>1</IsDefault><FeatureTypeStyle><Rule><RasterSymbolizer>';
+		  // ChannelSelection
+		  if (sld.channelselection) {
+			  sldString += '<ChannelSelection>';
+			  if (sld.channelselection.red && sld.channelselection.green && sld.channelselection.blue) {
+				  sldString += '<RedChannel>';
+				  sldString += '<SourceChannelName>' + sld.channelselection.red + '</SourceChannelName>';
+				  if (sld.channelselection.redmin !== undefined && sld.channelselection.redmax !== undefined) {
+                    sldString += '<ContrastEnhancement>';
+                    sldString += '<Normalize>';
+                    sldString += '<VendorOption name="algorithm">StretchToMinimumMaximum</VendorOption>';
+                    sldString += '<VendorOption name="minValue">' + sld.channelselection.redmin + '</VendorOption>';
+                    sldString += '<VendorOption name="maxValue">' + sld.channelselection.redmax + '</VendorOption>';
+                    sldString += '</Normalize>';
+                    sldString += '</ContrastEnhancement>';
+				  }
+				  sldString += '</RedChannel>';
+				  sldString += '<GreenChannel>';
+				  sldString += '<SourceChannelName>' + sld.channelselection.green + '</SourceChannelName>';
+				  if (sld.channelselection.greenmin !== undefined && sld.channelselection.greenmax !== undefined) {
+                    sldString += '<ContrastEnhancement>';
+                    sldString += '<Normalize>';
+                    sldString += '<VendorOption name="algorithm">StretchToMinimumMaximum</VendorOption>';
+                    sldString += '<VendorOption name="minValue">' + sld.channelselection.greenmin + '</VendorOption>';
+                    sldString += '<VendorOption name="maxValue">' + sld.channelselection.greenmax + '</VendorOption>';
+                    sldString += '</Normalize>';
+                    sldString += '</ContrastEnhancement>';
+				  }
+				  sldString += '</GreenChannel>';
+				  sldString += '<BlueChannel>';
+				  sldString += '<SourceChannelName>' + sld.channelselection.blue + '</SourceChannelName>';
+				  if (sld.channelselection.bluemin !== undefined && sld.channelselection.bluemax !== undefined) {
+                    sldString += '<ContrastEnhancement>';
+                    sldString += '<Normalize>';
+                    sldString += '<VendorOption name="algorithm">StretchToMinimumMaximum</VendorOption>';
+                    sldString += '<VendorOption name="minValue">' + sld.channelselection.bluemin + '</VendorOption>';
+                    sldString += '<VendorOption name="maxValue">' + sld.channelselection.bluemax + '</VendorOption>';
+                    sldString += '</Normalize>';
+                    sldString += '</ContrastEnhancement>';
+				  }
+				  sldString += '</BlueChannel>';
+			  } else if (sld.channelselection.gray) {
+				  sldString += '<GrayChannel>';
+				  sldString += '<SourceChannelName>' + sld.channelselection.gray + '</SourceChannelName>';
+				  if (sld.channelselection.graymin !== undefined && sld.channelselection.graymax !== undefined) {
+                    sldString += '<ContrastEnhancement>';
+                    sldString += '<Normalize>';
+                    sldString += '<VendorOption name="algorithm">StretchToMinimumMaximum</VendorOption>';
+                    sldString += '<VendorOption name="minValue">' + sld.channelselection.graymin + '</VendorOption>';
+                    sldString += '<VendorOption name="maxValue">' + sld.channelselection.graymax + '</VendorOption>';
+                    sldString += '</Normalize>';
+                    sldString += '</ContrastEnhancement>';
+				  }
+				  sldString += '</GrayChannel>';
+			  }
+			  sldString += '</ChannelSelection>';
+		  }
+		  
+		  // ColorMap
+		  if (sld.colormap) {
+		    sldString += '<ColorMap>';
+            for (var i=0; i<sld.colormap.length; i++) {
+              sldString += '<ColorMapEntry color=\"' + sld.colormap[i].color + '\" quantity=\"' + sld.colormap[i].quantity + '\"/>';
+            }
+            sldString += '</ColorMap>';
+		  }
+          sldString += '</RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>';
+          return sldString;
+		}
+/*		
+        function createSLD(layerName, colormap) {
+          let sld = '<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><StyledLayerDescriptor version=\"1.0.0\" xsi:schemaLocation=\"http://www.opengis.net/sld StyledLayerDescriptor.xsd\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><NamedLayer><Name>';
+          sld += layerName;
+          sld += '</Name><UserStyle><Title>SLD</Title><IsDefault>1</IsDefault><FeatureTypeStyle><Rule><RasterSymbolizer><ColorMap>';
+          for (var i=0; i<colormap.length; i++) {
+            sld += '<ColorMapEntry color=\"' + colormap[i].color + '\" quantity=\"' + colormap[i].quantity + '\"/>';
+          }
+          sld += '</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>';
+          return sld;
+        }
+*/
+/*
+        function createDefaultSLD(layerName, sldId, sldTemplates) {
+            if (sldTemplates[sldId]) {
+                let template = sldTemplates[sldId];
+                return template.start + layerName + template.end;
+            }
+            return null;
+        }
+*/
         var productLayers = [];
 
         $scope.$on('update.wmslayer', function(event, files) {
@@ -774,11 +868,26 @@ define(['../../ftepmodules', 'ol', 'x2js', 'clipboard'], function (ftepmodules, 
                 // Create layer for each output file
                 for (var j = 0; j < files.length; j++) {
                     if (files[j]._links && files[j]._links.wms) {
+                        var params = {
+                            FORMAT: 'image/png'
+                        };
+
+                        if (files[j].sld) {
+                            let layer_name = files[j]._links.wms.href.substring(files[j]._links.wms.href.lastIndexOf("layers=")+7);
+                            layer_name = layer_name.replace('%3A',':');
+                            let sld = createSLD(layer_name, files[j].sld);
+                            if (sld) {
+                                params = {
+                                    FORMAT: 'image/png',
+                                    STYLES: 'SLD',
+                                    SLD_BODY: sld
+                                };
+                            }
+                        }
+
                         var source = new ol.source.ImageWMS({
                             url: files[j]._links.wms.href,
-                            params: {
-                                format: 'image/png'
-                            },
+                            params: params,
                             projection: EPSG_3857
                         });
                         var productLayer = new ol.layer.Image({
