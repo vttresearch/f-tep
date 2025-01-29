@@ -2,7 +2,7 @@
 
     <div id="bottombar-tabs" class="col-xs-12 no-padding">
 	
-<div id="sldPanel" ng-if="navInfo.sldViewVisible">
+<section ng-controller="SldCtrl" id="sldPanel" ng-if="navInfo.sldViewVisible">
   <div id="sldViewTitle">STYLE EDITOR
     <i ng-click="showSingleBand()" ng-show="!editorSld.singleband"
 	  class="material-icons sldButton sldHeaderButton"
@@ -183,7 +183,7 @@
 	  <div id="multiBandInfo">If limits are used they must be defined for all three bands. Define both lower and upper limits.</div>
   </div>
 
-</div>
+</section>
 
         <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
 
