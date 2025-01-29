@@ -114,10 +114,9 @@ define(['../../ftepmodules'], function (ftepmodules) {
 
         $scope.openSldView = function(item) {
             $scope.navInfo.sldViewItem = item.properties;
-            $scope.editorSld = JSON.parse(JSON.stringify(item.properties.sld));
-			$scope.editorSldName = item.properties.sld.name;
             $scope.navInfo.sldViewVisible = true;
         };
+
         $scope.hideSldView = function() {
             $scope.navInfo.sldViewVisible = false;
             $scope.navInfo.sldViewItem = undefined;

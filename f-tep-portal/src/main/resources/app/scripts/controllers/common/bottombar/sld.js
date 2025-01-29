@@ -15,32 +15,18 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         $scope.slds = MapService.defaultSlds;
 		$scope.defaultSld = MapService.defaultSld;
 
+        $scope.editorSld = JSON.parse(JSON.stringify($scope.navInfo.sldViewItem.sld));
+		$scope.templateSld = $scope.editorSld;
+
         $scope.$on('slds.updated', function (event, slds) {
             $scope.slds = slds;
-            console.log($scope.slds);
         });
 
-        $scope.openSldView = function(item) {
-            $scope.navInfo.sldViewItem = item.properties;
-            $scope.editorSld = JSON.parse(JSON.stringify(item.properties.sld));
-			if (item.properties.sld.singleband) {
-			  $scope.showSingleBand();
-			} else {
-			  $scope.showMultiBand();
-			}
-			$scope.editorSldName = item.properties.sld.name;
-            $scope.navInfo.sldViewVisible = true;
-        };
-        $scope.hideSldView = function() {
-            $scope.navInfo.sldViewVisible = false;
-            $scope.navInfo.sldViewItem = undefined;
-            $scope.editorSld = undefined;
-        };
         $scope.showSingleBand = function() {
-			$scope.editorSld.singleband = true;
+            $scope.editorSld.singleband = true;
         };
         $scope.showMultiBand = function() {
-			$scope.editorSld.singleband = false;
+            $scope.editorSld.singleband = false;
         };
 
         $scope.newSldRowBelow = function($event) {
@@ -55,6 +41,7 @@ define(['../../../ftepmodules'], function (ftepmodules) {
             let index = $event.currentTarget.parentNode.rowIndex - 1; // -1 because of header row
             $scope.editorSld.colormap.splice(index, 1);
         }
+
 		$scope.addColormapTemplate = function() {
             $scope.editorSld.colormap.push({ 'quantity':0,'color':'#FFFFFF' });
             $scope.editorSld.colormap.push({ 'quantity':255,'color':'#000000' });
@@ -132,13 +119,13 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         $scope.sldSelectionChanged = function() {
 			let dropdown = document.getElementById('sldmenu');
             $scope.editorSld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
+			$scope.templateSld = $scope.editorSld;
 		}
 
         $scope.applySld = function() {
             let sld = parseSld();
             $scope.navInfo.sldViewItem.sld = sld;
             $scope.editorSld = JSON.parse(JSON.stringify(sld));
-			$scope.editorSldName = '';
 
             $rootScope.$broadcast('update.wmslayer', $scope.visibleWmsList);
         };
@@ -163,22 +150,23 @@ define(['../../../ftepmodules'], function (ftepmodules) {
 				sld.name = name;
 				customSlds[sld.name] = sld;
 				localStorage.setItem('slds', JSON.stringify(customSlds));
-				$scope.slds = MapService.getSlds();
+
+				MapService.getSlds();
 			}
         }
 		$scope.deleteSld = function() {
-			if ($scope.editorSld) {
-				if ($scope.editorSld.builtin) {
+			if ($scope.templateSld) {
+				if ($scope.templateSld.builtin) {
 					window.alert('Built-in styles cannot be deleted');
 				} else {
 					let customSlds = localStorage.getItem('slds');
 					if (customSlds) { 
 						customSlds = JSON.parse(customSlds);
-						delete customSlds[$scope.editorSld.name];
+						delete customSlds[$scope.templateSld.name];
 						localStorage.setItem('slds', JSON.stringify(customSlds));
 						
 						// Update SLD list
-						$scope.slds = MapService.getSlds();
+						MapService.getSlds();
 					}
 				}
 			}
