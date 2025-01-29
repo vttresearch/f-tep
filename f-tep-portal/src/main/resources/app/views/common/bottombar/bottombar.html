@@ -22,7 +22,7 @@
   <label id="sldMenuLabel" for="sldmenu">Choose existing template:</label>
   <select name="sldmenu" id="sldmenu" ng-model="editorSldName" ng-options="sld.name for sld in slds" ng-change="sldSelectionChanged()">
   </select>
-  <i ng-click="deleteSld()" ng-show="!editorSld.builtin"
+  <i ng-click="deleteSld()" ng-show="!editorSld.builtin && editorSldName != ''"
 			class="material-icons sldButton"
 			aria-label="Delete template"
 			uib-tooltip="Delete template"

@@ -53,9 +53,7 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         }
         $scope.deleteSldRow = function($event) {
             let index = $event.currentTarget.parentNode.rowIndex - 1; // -1 because of header row
-			//console.log(index);
             $scope.editorSld.colormap.splice(index, 1);
-			//console.log($scope.editorSld);
         }
 		$scope.addColormapTemplate = function() {
             $scope.editorSld.colormap.push({ 'quantity':0,'color':'#FFFFFF' });
@@ -132,13 +130,8 @@ define(['../../../ftepmodules'], function (ftepmodules) {
 
 		// Populate the style editor view with stored values
         $scope.sldSelectionChanged = function() {
-			//console.log($scope.editorSld);
 			let dropdown = document.getElementById('sldmenu');
-			//console.log(dropdown.selectedIndex);
-			//console.log($scope.slds[dropdown.selectedIndex]);
-            //$scope.navInfo.sldViewItem.sld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
             $scope.editorSld = JSON.parse(JSON.stringify($scope.slds[dropdown.selectedIndex]));
-			$scope.editorSldName = $scope.editorSld.name;
 		}
 
         $scope.applySld = function() {
@@ -152,7 +145,6 @@ define(['../../../ftepmodules'], function (ftepmodules) {
 
         $scope.saveSld = function() {
 			let name = window.prompt("Please give name for the saved custom style. Using an existing name overwrites the old style.", "");
-			//console.log(name);
 			if (name == null) {
 				return;
 			}
