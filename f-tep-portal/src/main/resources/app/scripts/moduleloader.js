@@ -12,6 +12,7 @@ define([
     './controllers/common/bottombar/databasket',
     './controllers/common/bottombar/jobs',
     './controllers/common/bottombar/results',
+    './controllers/common/bottombar/sld',
     './controllers/common/directives/dynamicForm',
 
     './controllers/community/community',

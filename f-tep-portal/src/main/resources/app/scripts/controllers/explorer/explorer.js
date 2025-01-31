@@ -8,7 +8,7 @@
 'use strict';
 define(['../../ftepmodules'], function (ftepmodules) {
 
-    ftepmodules.controller('ExplorerCtrl', ['$scope', '$rootScope', '$mdDialog', 'TabService', 'MessageService', 'ftepProperties', 'CommonService', 'CommunityService', '$timeout', function ($scope, $rootScope, $mdDialog, TabService, MessageService, ftepProperties, CommonService, CommunityService, $timeout) {
+    ftepmodules.controller('ExplorerCtrl', ['$scope', '$rootScope', '$mdDialog', 'TabService', 'MessageService', 'ftepProperties', 'CommonService', 'CommunityService', 'MapService', '$timeout', function ($scope, $rootScope, $mdDialog, TabService, MessageService, ftepProperties, CommonService, CommunityService, MapService, $timeout) {
 
         /* Set active page */
         $scope.navInfo = TabService.navInfo.explorer;
@@ -109,12 +109,32 @@ define(['../../ftepmodules'], function (ftepmodules) {
         };
         /** END OF BOTTOM BAR **/
 
+        /** Set available SLD styles **/
+		$scope.defaultSld = MapService.defaultSld;
+
+        $scope.openSldView = function(item) {
+            $scope.navInfo.sldViewItem = item.properties;
+            $scope.navInfo.sldViewVisible = true;
+			$scope.navInfo.joboutput = undefined;
+        };
+
+        $scope.hideSldView = function() {
+            $scope.navInfo.sldViewVisible = false;
+            $scope.navInfo.sldViewItem = undefined;
+        };
+
         /** WMS layer show/hide option for Product Search result items **/
         $scope.visibleWmsList = [];
 
         /* Toggles display of a wms item */
-        $scope.toggleSearchResWMS = function ($event, item, show) {
+        $scope.toggleSearchResWMS = function ($event, item, show, sld) {
             if (show) {
+                if (sld == undefined && item.properties.sld == undefined) {
+                    sld = JSON.parse(JSON.stringify($scope.defaultSld));
+                }
+				if (sld) {
+                    item.properties.sld = sld;
+				}
                 $scope.visibleWmsList.push(item.properties);
             } else {
                 var index = $scope.visibleWmsList.indexOf(item.properties);

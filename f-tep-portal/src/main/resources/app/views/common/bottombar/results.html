@@ -52,12 +52,24 @@
 
                 <div class="col-xs-2 no-padding buttons">
                     <div class="row">
-                        <div class="col-sm-3 col-xs-6 no-padding">
+                        <div class="col-sm-2 col-xs-6 no-padding">
+                            <md-button class="toolbar-button md-secondary"
+                                ng-show="hasWmsLink(item) && isSearchResWmsVisible(item)"
+                                ng-click="openSldView(item) && $event.stopPropagation()"
+                                aria-label="Adjust Style"
+                                uib-tooltip="Adjust Style"
+                                tooltip-placement="top"
+                                tooltip-trigger="mouseenter"
+                                tooltip-append-to-body="true">
+                                <i class="material-icons">image</i>
+                            </md-button>
+                        </div>
+                        <div class="col-sm-2 col-xs-6 no-padding">
                             <md-button class="toolbar-button md-secondary"
                                 ng-show="hasWmsLink(item) && !isSearchResWmsVisible(item)"
                                 ng-click="toggleSearchResWMS($event, item, true); $event.stopPropagation()"
-                                aria-label="WMS Layer Not Visible"
-                                uib-tooltip="Show WMS Layer"
+                                aria-label="Image Layer Not Visible"
+                                uib-tooltip="Show Image Layer"
                                 tooltip-placement="top"
                                 tooltip-trigger="mouseenter"
                                 tooltip-append-to-body="true">
@@ -65,16 +77,16 @@
                             </md-button>
                             <md-button class="toolbar-button md-secondary"
                                 ng-show="hasWmsLink(item) && isSearchResWmsVisible(item)"
-                                ng-click="toggleSearchResWMS($event, item, false); $event.stopPropagation()"
-                                aria-label="WMS Layer Visible"
-                                uib-tooltip="Hide WMS Layer"
+                                ng-click="toggleSearchResWMS($event, item, false, 1); $event.stopPropagation()"
+                                aria-label="Image Layer Visible"
+                                uib-tooltip="Hide Image Layer"
                                 tooltip-placement="top"
                                 tooltip-trigger="mouseenter"
                                 tooltip-append-to-body="true">
                                 <i class="material-icons">layers_clear</i>
                             </md-button>
                         </div>
-                        <div class="col-sm-3 col-xs-6 no-padding">
+                        <div class="col-sm-2 col-xs-6 no-padding">
                             <md-button class="toolbar-button md-secondary"
                                 ng-click="showMetadata($event, item); $event.stopPropagation()"
                                 aria-label="Show Metadata"
@@ -85,7 +97,7 @@
                                 <i class="material-icons">info_outline</i>
                             </md-button>
                         </div>
-                        <div class="col-sm-3 col-xs-6 no-padding">
+                        <div class="col-sm-2 col-xs-6 no-padding">
                             <md-button class="toolbar-button md-secondary"
                                 ng-if="item.properties.ftepUsable && !item.properties.extraParams.processingRequired"
                                 aria-label="Usable in services"
@@ -114,7 +126,7 @@
                                 <i class="material-icons">warning</i>
                             </md-button>
                         </div>
-                        <div class="col-sm-3 col-xs-6 no-padding" ng-if="item.properties._links.download.href">
+                        <div class="col-sm-2 col-xs-6 no-padding" ng-if="item.properties._links.download.href">
                             <md-button class="toolbar-button md-secondary"
                                 ng-href="{{item.properties._links.download.href}}"
                                 aria-label="Download"

@@ -1,7 +1,11 @@
 <article id="bottombar">
 
     <div id="bottombar-tabs" class="col-xs-12 no-padding">
-        <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation>
+	
+<section ng-controller="SldCtrl" id="sldPanel" ng-if="navInfo.sldViewVisible" ng-include src="'views/common/bottombar/sld.html'">
+</section>
+
+        <md-tabs md-selected="navInfo.activeBottomNav" md-disable-animation ng-if="!navInfo.sldViewVisible">
 
             <section ng-controller="ResultsCtrl" ng-if="navInfo.activeTab == tabs.EXPLORER">
                 <div ng-if="navInfo.activeBottomNav == bottomNavTabs.RESULTS" class="tab-options" ng-include src="'views/common/bottombar/tabs/resultstab.html'" />
@@ -58,6 +62,17 @@
     </div>
 
     <div id="bottombar-expand">
+	<md-button class="toolbar-button"
+               ng-show="navInfo.sldViewVisible"
+			   ng-click="hideSldView()"
+			   aria-label="Close"
+			   uib-tooltip="Close"
+			   tooltip-placement="left"
+			   tooltip-trigger="mouseenter"
+			   tooltip-append-to-body="true">
+		<i class="material-icons">close</i>
+	</md-button>
+
         <md-button class="toolbar-button"
                    ng-show="!bottombarTall"
                    ng-click="toggleBottombarHeight()"
@@ -81,6 +96,7 @@
         </md-button>
 
         <md-button class="toolbar-button"
+               ng-show="!navInfo.sldViewVisible"
                    ng-click="toggleBottomView()"
                    aria-label="Close"
                    uib-tooltip="Close"

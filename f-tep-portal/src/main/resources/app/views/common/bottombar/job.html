@@ -98,11 +98,22 @@
             <div class="md-list-item-text" ng-click="selectOutputFile(outputFile)" layout="column">
                 {{outputFile.uri}}
             </div>
+<div>
+			<md-button class="toolbar-button md-secondary icon-button-accent"
+				ng-show="hasWmsLink(outputFile) && isWmsVisible(outputFile)"
+				ng-click="openJobOutputSldView(outputFile) && $event.stopPropagation()"
+				aria-label="Adjust Style"
+				uib-tooltip="Adjust Style"
+				tooltip-placement="top"
+				tooltip-trigger="mouseenter"
+				tooltip-append-to-body="true">
+				<i class="material-icons">image</i>
+			</md-button>
 
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-show="hasWmsLink(outputFile) && !isWmsVisible(outputFile)"
                        ng-click="toggleWMS(outputFile, true); $event.stopPropagation()"
-                       uib-tooltip="Show WMS Layer"
+                       uib-tooltip="Show Image Layer"
                        tooltip-placement="top"
                        tooltip-trigger="mouseenter"
                        tooltip-append-to-body="true">
@@ -112,12 +123,13 @@
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-show="hasWmsLink(outputFile) && isWmsVisible(outputFile)"
                        ng-click="toggleWMS(outputFile, false); $event.stopPropagation()"
-                       uib-tooltip="Hide WMS Layer"
+                       uib-tooltip="Hide Image Layer"
                        tooltip-placement="top"
                        tooltip-trigger="mouseenter"
                        tooltip-append-to-body="true">
                 <i class="material-icons">layers_clear</i>
             </md-button>
+</div>
 
             <md-button class="toolbar-button md-secondary icon-button-accent"
                        ng-href="{{outputFile._links.download.href}}"
