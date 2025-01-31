@@ -3278,3 +3278,77 @@ template {
 [hidden] {
   display: none;
 }
+
+#sldPanel {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 5px;
+}
+
+#sldViewTitle {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  padding: 7px 19px;
+  color: #558b2f;
+}
+
+.channelSelectionTable {
+  margin: 10px;
+}
+th.channelSelection, td.channelSelection {
+  padding: 2px;
+}
+
+.channelSelectionLabelTH {
+  width: 60px;
+}
+
+input.channelSelectionBandInput {
+  width: 100px;
+}
+input.channelSelectionMinInput {
+  width: 110px;
+}
+input.channelSelectionMaxInput {
+  width: 110px;
+}
+
+.sldButton {
+  color: #558b2f;
+  cursor: pointer;
+}
+
+.sldHeaderButton {
+  margin-left: 25px;
+}
+
+#sldTable {
+  margin: 10px;
+}
+
+th.sldHeaderCell, td.sldDataCell {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+#sldname {
+  margin-left: 10px;
+}
+
+input.sldQuantityInput {
+  width: 100px;
+}
+input.sldColorInput {
+  border: 0;
+  padding: 0;
+}
+
+#sldNameDiv {
+  margin-top: 5px;
+}
+
+#singleBandInfo, #multiBandInfo {
+  font-size: 0.8em;
+}
