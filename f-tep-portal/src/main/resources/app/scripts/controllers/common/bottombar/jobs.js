@@ -131,9 +131,6 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         /* Toggles display of a wms item */
         $scope.toggleWMS = function (file, show) {
             if (show) {
-                if (file.sld == undefined) {
-                    file.sld = JSON.parse(JSON.stringify($scope.defaultSld));
-                }
                 $scope.jobParams.wms.visibleList.push(file);
             } else {
                 var index = $scope.jobParams.wms.visibleList.indexOf(file);
