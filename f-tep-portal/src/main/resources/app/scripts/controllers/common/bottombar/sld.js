@@ -15,7 +15,12 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         $scope.slds = MapService.defaultSlds;
 		$scope.defaultSld = MapService.defaultSld;
 
-        $scope.editorSld = JSON.parse(JSON.stringify($scope.navInfo.sldViewItem.sld));
+		if ($scope.navInfo.sldViewItem == undefined || $scope.navInfo.sldViewItem.sld == undefined) {
+			$scope.editorSld = JSON.parse(JSON.stringify($scope.defaultSld));
+		} else {
+			$scope.editorSld = JSON.parse(JSON.stringify($scope.navInfo.sldViewItem.sld));
+		}
+
 		$scope.templateSld = $scope.editorSld;
 
         $scope.$on('slds.updated', function (event, slds) {
