@@ -59,7 +59,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
             .put(MissionPlatform.builder().mission("envisat").platform(null).build(), "ENVISAT")
             .put(MissionPlatform.builder().mission("landsat").platform("Landsat-5").build(), "LANDSAT-5")
             .put(MissionPlatform.builder().mission("landsat").platform("Landsat-7").build(), "LANDSAT-7")
-            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-8").build(), "LANDSAT-8")
+            .put(MissionPlatform.builder().mission("landsat").platform("Landsat-8").build(), "LANDSAT-8-ESA")
             .put(MissionPlatform.builder().mission("sentinel1").platform(null).build(), "SENTINEL-1")
             .put(MissionPlatform.builder().mission("sentinel2").platform(null).build(), "SENTINEL-2")
             .put(MissionPlatform.builder().mission("sentinel3").platform(null).build(), "SENTINEL-3")
@@ -199,7 +199,17 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
     private Feature addFtepProperties(Feature feature, SearchParameters parameters) {
 
         String collection = feature.getProperty("collection");
-        String productSource = SUPPORTED_MISSIONS.inverse().get(collection).getMission();
+		String productSource = "";
+		if (SUPPORTED_MISSIONS.inverse().get(collection) == null) {
+			// collection == "" when Landsat products are searched by product identifier (when used as inputs)
+			//LOG.info(parameters);
+			String mission = parameters.getValue("mission", null);
+			if (mission != null && mission.equals("landsat")) {
+				productSource = mission;
+			}
+		} else {
+			productSource = SUPPORTED_MISSIONS.inverse().get(collection).getMission();
+		}
         String productIdentifier = ((String) feature.getProperty("name")).replace(".SAFE", "");
         URI ftepUri = externalProductService.getUri(productSource, productIdentifier);
 
@@ -367,7 +377,7 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
             searchL2A = true;
             parameters.setValue("s2ProcessingLevel", "1C");
         }
-
+        //LOG.info(parameters);
         String collectionName = getCollection(parameters);
 
         // Need to remove the /resto part from the base URL!
@@ -379,7 +389,10 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         // Add attributes
         httpUrl.addQueryParameter("$expand", "Attributes");
         // Build filter from query parameters
-        String filter = "Collection/Name eq '" + collectionName + "'";
+        String filter = "";
+        if (!collectionName.trim().equals("")) {
+            filter += "Collection/Name eq '" + collectionName + "'";
+        }
 
         Map<String, String> queryParams = getQueryParameters(parameters);
         //LOG.info(queryParams);
@@ -417,6 +430,9 @@ public class CreodiasSearchProvider extends RestoSearchProvider {
         if (queryParams.containsKey("geometry")) {
             filter += " and OData.CSC.Intersects(area=geography'SRID=4326;" 
                     + queryParams.get("geometry") + "')";
+        }
+        if (filter.startsWith(" and ")) {
+            filter = filter.substring(5);
         }
         httpUrl.addQueryParameter("$filter", filter);
 

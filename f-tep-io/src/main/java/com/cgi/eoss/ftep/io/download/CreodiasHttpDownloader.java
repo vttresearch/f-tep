@@ -49,7 +49,7 @@ public class CreodiasHttpDownloader implements Downloader {
             .put("sentinel5", "SENTINEL-5P")
             .put("landsat", "LANDSAT-5")
             .put("landsat", "LANDSAT-7")
-            .put("landsat", "LANDSAT-8")
+            .put("landsat", "LANDSAT-8-ESA")
             .put("envisat", "ENVISAT")
             .build();
 
