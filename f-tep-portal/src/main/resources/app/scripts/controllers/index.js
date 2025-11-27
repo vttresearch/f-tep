@@ -27,14 +27,17 @@ define(['../ftepmodules'], function (ftepmodules) {
                     $scope.activeUser = user;
                     // User changed, check for subscription
                     $scope.checkActiveSubscription();
+					$scope.checkTermsAccepted();
                 }
             } else if ($scope.activeUser.id || user.id) {
                 $scope.activeUser = user;
                 // User logged in, check for subscription
                 $scope.checkActiveSubscription();
+				$scope.checkTermsAccepted();
             } else {
                 $scope.activeUser = {};
                 $scope.subscribed = false;
+				$scope.termsAccepted = false;
             }
         });
 
