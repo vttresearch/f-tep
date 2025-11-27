@@ -139,11 +139,11 @@ public class UsersApiExtension {
         User user = ftepSecurityService.getCurrentUser();
         LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
         // Get current terms
-        Optional<FtepTerms> currentTerms = ftepTermsDataService.streamAll().anyMatch(terms -> terms.isActive(currentTime));
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.streamAll().filter(terms -> terms.isActive(currentTime)).findFirst();
         if (currentTerms.isPresent()) {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
-            return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.validStart));
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.getValidStart()));
         }
         // No terms to accept
         return true;
