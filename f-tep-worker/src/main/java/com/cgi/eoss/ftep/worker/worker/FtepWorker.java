@@ -113,6 +113,7 @@ public class FtepWorker extends FtepWorkerGrpc.FtepWorkerImplBase {
     private final ServiceInputOutputManager inputOutputManager;
     private final FtepDockerService ftepDockerService;
     private final boolean keepProcDir;
+    private final boolean gpuEnabled;
 
     private DockerRegistryConfig dockerRegistryConfig;
 
@@ -147,12 +148,14 @@ public class FtepWorker extends FtepWorkerGrpc.FtepWorkerImplBase {
     @Autowired
     public FtepWorker(FtepWorkerNodeManager nodeManager, JobEnvironmentService jobEnvironmentService,
                       ServiceInputOutputManager inputOutputManager, FtepDockerService ftepDockerService,
-                      @Qualifier("keepProcDir") boolean keepProcDir) {
+                      @Qualifier("keepProcDir") boolean keepProcDir,
+                      @Qualifier("gpuEnabled") boolean gpuEnabled) {
         this.nodeManager = nodeManager;
         this.jobEnvironmentService = jobEnvironmentService;
         this.inputOutputManager = inputOutputManager;
         this.ftepDockerService = ftepDockerService;
         this.keepProcDir = keepProcDir;
+        this.gpuEnabled = gpuEnabled;
     }
 
     @Autowired(required = false)
@@ -566,7 +569,7 @@ public class FtepWorker extends FtepWorkerGrpc.FtepWorkerImplBase {
         }
 
         // Launch tag
-        return ftepDockerService.createContainer(dockerClient, jobSpec, imageTag, prepareBindsForDockerContainer(jobSpec)).getId();
+        return ftepDockerService.createContainer(dockerClient, jobSpec, imageTag, prepareBindsForDockerContainer(jobSpec), this.gpuEnabled).getId();
     }
 
     private PortBindings getBindings(DockerClient dockerClient, String containerId, Node jobNode) {

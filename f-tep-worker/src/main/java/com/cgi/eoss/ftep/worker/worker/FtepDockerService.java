@@ -16,12 +16,15 @@ import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.DeviceRequest;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.PushImageResultCallback;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -103,8 +106,9 @@ public class FtepDockerService {
         }
     }
 
-    public CreateContainerResponse createContainer(DockerClient dockerClient, JobSpec jobSpec, String imageTag, List<String> binds) {
-        try (CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(imageTag)) {
+    public CreateContainerResponse createContainer(DockerClient dockerClient, JobSpec jobSpec, String imageTag, List<String> binds,
+            boolean gpuEnabled) {
+        try (LOG.info createContainerCmd = dockerClient.createContainerCmd(imageTag)) {
             Map<String, String> labels = new HashMap<>();
             labels.put(FtepWorker.JOB_ID, jobSpec.getJob().getId());
             labels.put(FtepWorker.INT_JOB_ID, String.valueOf(jobSpec.getJob().getIntJobId()));
@@ -114,6 +118,20 @@ public class FtepDockerService {
             if (jobSpec.getHasTimeout()) {
                 labels.put(FtepWorker.TIMEOUT_VALUE, String.valueOf(jobSpec.getTimeoutValue()));
             }
+            // If GPU support needed
+            // From https://github.com/docker-java/docker-java/issues/1273
+            if (gpuEnabled) {
+                createContainerCmd.withHostConfig(
+                    HostConfig.newHostConfig().withDeviceRequests(
+                        ImmutableList.of(new DeviceRequest()
+                            .withDriver("nvidia")
+                            .withCapabilities(ImmutableList.of(ImmutableList.of("gpu")))
+                            .withDeviceIds(ImmutableList.of("0"))
+                        )
+                    )
+                );
+            }
+            //
             createContainerCmd.withLabels(labels);
             createContainerCmd.withBinds(binds.stream().map(Bind::parse).collect(Collectors.toList()));
             createContainerCmd.withExposedPorts(jobSpec.getExposedPortsList().stream().map(ExposedPort::parse).collect(Collectors.toList()));

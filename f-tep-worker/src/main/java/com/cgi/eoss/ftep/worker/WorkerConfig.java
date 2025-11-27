@@ -84,6 +84,12 @@ public class WorkerConfig {
         return maxJobsPerNode;
     }
 
+    // Should GPU be exposed to the Docker containers
+    @Bean
+    public Boolean gpuEnabled(@Value("${ftep.worker.gpuEnabled:false}") boolean gpuEnabled) {
+        return gpuEnabled;
+    }
+
     @Bean
     public Long minSecondsBetweenScalingActions(@Value("${ftep.worker.minSecondsBetweenScalingActions:600}") long minSecondsBetweenScalingActions) {
         return minSecondsBetweenScalingActions;
