@@ -150,7 +150,7 @@ public class UsersApiExtension {
     }
 
     @GetMapping("/current/checkTermsAccepted")
-    public ResponseEntity checkTermsAccepted() {
+    public ResponseEntity<Void> checkTermsAccepted() {
         if (hasAcceptedCurrentTerms()) {
             return ResponseEntity.ok().build();
         } else {

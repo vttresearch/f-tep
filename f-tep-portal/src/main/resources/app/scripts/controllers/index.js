@@ -30,16 +30,19 @@ define(['../ftepmodules'], function (ftepmodules) {
                     // User changed, check for subscription
                     $scope.checkActiveSubscription();
 					$scope.checkTermsAccepted();
+					$scope.sessionEnded = false;
                 }
             } else if ($scope.activeUser.id || user.id) {
                 $scope.activeUser = user;
                 // User logged in, check for subscription
                 $scope.checkActiveSubscription();
 				$scope.checkTermsAccepted();
+				$scope.sessionEnded = false;
             } else {
                 $scope.activeUser = {};
                 $scope.subscribed = false;
 				$scope.termsAccepted = false;
+				$scope.sessionEnded = true;
             }
         });
 
@@ -83,7 +86,7 @@ define(['../ftepmodules'], function (ftepmodules) {
 
         $scope.checkTermsAccepted = function() {
 			UserService.checkTermsAccepted().then(
-				function(response) {
+				function() {
 					$scope.termsAccepted = true;
 				}, function(error) {
 					$scope.termsAccepted = false;
