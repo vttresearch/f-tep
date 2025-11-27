@@ -329,7 +329,11 @@ define(['../ftepmodules', 'traversonHal'], function (ftepmodules, TraversonJsonH
             function (document) {
                 if (200 <= document.status && document.status < 300) {
                     deferred.resolve(document);
-            }, function (error) {
+                } else {
+                    MessageService.addError('Unable to get current user\'s terms acceptance');
+                    deferred.reject();
+                }
+			}, function (error) {
                 MessageService.addError('Unable to get current user\'s terms acceptance', error);
                 deferred.reject();
             });
