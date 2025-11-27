@@ -43,8 +43,8 @@ public class FtepTermsAcceptance implements FtepEntityWithOwner<FtepTermsAccepta
      * <p>The user of this acceptance.</p>
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user", nullable = false)
-    private User user;
+    @JoinColumn(name = "owner", nullable = false)
+    private User owner;
 
     /**
      * <p>The date and time the acceptance was created.</p>
@@ -54,11 +54,11 @@ public class FtepTermsAcceptance implements FtepEntityWithOwner<FtepTermsAccepta
 
     @Override
     public int compareTo(FtepTermsAcceptance o) {
-        return ComparisonChain.start().compare(user.getName(), o.user.getName()).result();
+        return ComparisonChain.start().compare(owner.getName(), o.owner.getName()).result();
     }
 
     public FtepTermsAcceptance(User currentUser, LocalDateTime currentTime) {
-        this.user = currentUser;
+        this.owner = currentUser;
         this.acceptedTime = currentTime;
     }
 

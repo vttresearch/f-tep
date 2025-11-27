@@ -59,4 +59,9 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
         return currentTime.isAfter(Optional.ofNullable(validStart).orElse(LocalDateTime.MIN))
                 && currentTime.isBefore(Optional.ofNullable(validEnd).orElse(LocalDateTime.MAX));
     }
+
+    @Override
+    public int compareTo(FtepTerms o) {
+        return ComparisonChain.start().compare(url, o.url).result();
+    }
 }
