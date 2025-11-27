@@ -1,5 +1,6 @@
 package com.cgi.eoss.ftep.model;
 
+import com.google.common.collect.ComparisonChain;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
