@@ -33,6 +33,12 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
     private Long id;
 
     /**
+     * Terms version identifier.
+     */
+    @Column(name = "version")
+    private String version;
+
+    /**
      * Permanent URL to the terms version.
      */
     @Column(name = "url")
@@ -50,7 +56,8 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
     @Column(name = "valid_end")
     private LocalDateTime validEnd;
 
-    public FtepTerms(String url, LocalDateTime validStart, LocalDateTime validEnd) {
+    public FtepTerms(String version, String url, LocalDateTime validStart, LocalDateTime validEnd) {
+        this.version = version;
         this.url = url;
         this.validStart = validStart;
         this.validEnd = validEnd;
@@ -63,6 +70,6 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
 
     @Override
     public int compareTo(FtepTerms o) {
-        return ComparisonChain.start().compare(url, o.url).result();
+        return ComparisonChain.start().compare(version, o.version).result();
     }
 }

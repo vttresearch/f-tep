@@ -28,6 +28,6 @@ public class JpaFtepTermsDataService extends AbstractJpaDataService<FtepTerms> i
 
     @Override
     Predicate getUniquePredicate(FtepTerms entity) {
-        return ftepTerms.url.eq(entity.getUrl());
+        return ftepTerms.version.eq(entity.getVersion());
     }
 }
