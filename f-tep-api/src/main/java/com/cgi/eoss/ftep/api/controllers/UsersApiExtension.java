@@ -144,7 +144,7 @@ public class UsersApiExtension {
             return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.validStart));
         }
         // No terms to accept
-        return true
+        return true;
     }
 
     @GetMapping("/current/checkTermsAccepted")
