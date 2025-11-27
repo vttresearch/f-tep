@@ -3,6 +3,7 @@ package com.cgi.eoss.ftep.persistence.service;
 import com.cgi.eoss.ftep.model.FtepTerms;
 import com.cgi.eoss.ftep.persistence.dao.FtepEntityDao;
 import com.cgi.eoss.ftep.persistence.dao.FtepTermsDao;
+import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
