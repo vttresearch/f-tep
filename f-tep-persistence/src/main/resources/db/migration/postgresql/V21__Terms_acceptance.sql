@@ -2,7 +2,7 @@ CREATE TABLE ftep_terms (
     id                      BIGSERIAL PRIMARY KEY,
     version                 CHARACTER VARYING(255) NOT NULL UNIQUE,
     url                     CHARACTER VARYING(255) NOT NULL,
-    valid_start             TIMESTAMP NOT NULL WITHOUT TIME ZONE,
+    valid_start             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     valid_end               TIMESTAMP WITHOUT TIME ZONE
 );
 
