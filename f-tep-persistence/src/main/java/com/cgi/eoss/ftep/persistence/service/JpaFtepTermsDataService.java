@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.cgi.eoss.ftep.model.QFtepTerms.ftepterms;
+import static com.cgi.eoss.ftep.model.QFtepTerms.ftepTerms;
 
 @Service
 @Transactional(readOnly = true)
