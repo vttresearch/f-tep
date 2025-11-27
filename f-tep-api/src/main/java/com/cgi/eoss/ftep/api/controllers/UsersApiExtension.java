@@ -143,7 +143,7 @@ public class UsersApiExtension {
         if (currentTerms.isPresent()) {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
-            return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.getValidStart()));
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.get().getValidStart()));
         }
         // No terms to accept
         return true;
