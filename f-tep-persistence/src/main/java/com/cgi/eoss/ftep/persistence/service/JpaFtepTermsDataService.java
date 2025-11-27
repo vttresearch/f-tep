@@ -25,4 +25,8 @@ public class JpaFtepTermsDataService extends AbstractJpaDataService<FtepTerms> i
         return ftepTermsDao;
     }
 
+    @Override
+    Predicate getUniquePredicate(FtepTerms entity) {
+        return ftepTerms.url.eq(entity.getUrl());
+    }
 }
