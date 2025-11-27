@@ -4,6 +4,8 @@ import com.cgi.eoss.ftep.model.Role;
 import com.cgi.eoss.ftep.model.Subscription;
 import com.cgi.eoss.ftep.model.User;
 import com.cgi.eoss.ftep.model.Wallet;
+import com.cgi.eoss.ftep.model.FtepTerms;
+import com.cgi.eoss.ftep.model.FtepTermsAcceptance;
 import com.cgi.eoss.ftep.persistence.service.GroupDataService;
 import com.cgi.eoss.ftep.persistence.service.SubscriptionDataService;
 import com.cgi.eoss.ftep.persistence.service.UserDataService;
