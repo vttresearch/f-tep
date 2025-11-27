@@ -14,6 +14,7 @@ define(['../ftepmodules'], function (ftepmodules) {
         $scope.sessionEnded = false;
         $scope.timeoutDismissed = false;
         $scope.subscribed = false;
+        $scope.termsAccepted = false;
         $scope.activeUser = {};
 
         $scope.$on('no.user', function() {
@@ -70,6 +71,30 @@ define(['../ftepmodules'], function (ftepmodules) {
                         .title('Trial not available')
                         .textContent('It appears that you have already enjoyed a platform subscription before. Please consider the available subscription options or kindly contact us with your special request.')
                         .ariaLabel('Trial not available')
+                        .ok('OK')
+                    );
+            });
+        };
+
+        $scope.checkTermsAccepted = function() {
+			UserService.checkTermsAccepted().then(
+				function(response) {
+					$scope.termsAccepted = true;
+				}, function(error) {
+					$scope.termsAccepted = false;
+			});
+        }
+
+        $scope.acceptTerms = function() {
+            UserService.acceptTerms().then(function() {
+                    $scope.termsAccepted = true;
+                }, function(error) {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title('Something went wrong')
+                        .textContent('Oops, it seems that something went wrong. If the problem persists please contact the administrators.')
+                        .ariaLabel('Something went wrong')
                         .ok('OK')
                     );
             });
