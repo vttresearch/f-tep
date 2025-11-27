@@ -31,7 +31,7 @@ public class JpaFtepTermsAcceptanceDataService extends AbstractJpaDataService<Ft
 
     @Override
     Predicate getUniquePredicate(FtepTermsAcceptance entity) {
-        return ftepTermsAcceptance.user.eq(entity.getUser()).and(ftepTermsAcceptanceDao.acceptanceTime.eq(entity.getAcceptanceTime()));
+        return ftepTermsAcceptance.owner.eq(entity.getOwner()).and(ftepTermsAcceptance.acceptanceTime.eq(entity.getAcceptanceTime()));
     }
 
     @Override
