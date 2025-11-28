@@ -45,6 +45,13 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
     private String url;
 
     /**
+     * Service the terms apply to (Null for general terms)
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "service", nullable = true)
+    private FtepService service;
+
+    /**
      * <p>The start date and time of the terms.</p>
      */
     @Column(name = "valid_start")
@@ -56,9 +63,10 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
     @Column(name = "valid_end")
     private LocalDateTime validEnd;
 
-    public FtepTerms(String version, String url, LocalDateTime validStart, LocalDateTime validEnd) {
+    public FtepTerms(String version, String url, FtepService service, LocalDateTime validStart, LocalDateTime validEnd) {
         this.version = version;
         this.url = url;
+        this.service = service;
         this.validStart = validStart;
         this.validEnd = validEnd;
     }
@@ -70,6 +78,6 @@ public class FtepTerms implements FtepEntity<FtepTerms> {
 
     @Override
     public int compareTo(FtepTerms o) {
-        return ComparisonChain.start().compare(version, o.version).result();
+        return ComparisonChain.start().compare(version, o.version).compare(service, o.service).result();
     }
 }

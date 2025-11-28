@@ -139,11 +139,13 @@ public class UsersApiExtension {
         User user = ftepSecurityService.getCurrentUser();
         LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
         // Get current terms
-        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream().filter(terms -> terms.isActive(currentTime)).findFirst();
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
         if (currentTerms.isPresent()) {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
-            return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.get().getValidStart()));
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.terms.getId() == currentTerms.getId());
         }
         // No terms to accept
         return true;
@@ -161,11 +163,17 @@ public class UsersApiExtension {
     @PostMapping("/current/acceptTerms")
     @Transactional
     public ResponseEntity<Void> acceptTerms() {
-        if (!hasAcceptedCurrentTerms()) {
+        if (!hasAcceptedCurrentTerms(service)) {
             User currentUser = ftepSecurityService.getCurrentUser();
             LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
-            FtepTermsAcceptance acceptance = new FtepTermsAcceptance(currentUser, currentTime);
-            ftepTermsAcceptanceDataService.save(acceptance);
+            // Get current terms
+            Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                    .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
+            // There should always be terms if we get this far 
+            if (currentTerms.isPresent()) {
+                FtepTermsAcceptance acceptance = new FtepTermsAcceptance(currentUser, currentTerms.get(), currentTime);
+                ftepTermsAcceptanceDataService.save(acceptance);
+            }
         }
         return ResponseEntity.accepted().build();
     }
