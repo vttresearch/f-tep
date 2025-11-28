@@ -1,5 +1,6 @@
 package com.cgi.eoss.ftep.api.controllers;
 
+import com.cgi.eoss.ftep.model.FtepService;
 import com.cgi.eoss.ftep.model.FtepTerms;
 import com.cgi.eoss.ftep.model.Job;
 import com.cgi.eoss.ftep.model.JobConfig;
@@ -101,6 +102,9 @@ public class JobConfigsApiExtension {
         if (!hasAcceptedCurrentTerms()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("F-TEP Terms and Conditions have not been accepted.");
         }
+        if (!hasAcceptedCurrentServiceTerms(jobConfig.getService())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service Terms and Conditions have not been accepted.");
+        }
         try {
             if (exceedsQuotas(currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
@@ -156,6 +160,12 @@ public class JobConfigsApiExtension {
         LOG.debug("Received new request for systematic processing");
 
         User currentUser = ftepSecurityService.getCurrentUser();
+        if (!hasAcceptedCurrentTerms()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("F-TEP Terms and Conditions have not been accepted.");
+        }
+        if (!hasAcceptedCurrentServiceTerms(jobConfigTemplate.getService())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service Terms and Conditions have not been accepted.");
+        }
         try {
             if (exceedsQuotas(currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
@@ -264,6 +274,22 @@ public class JobConfigsApiExtension {
         // Get current terms
         Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
                 .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            // Check that the user has accepted these terms, i.e. acceptance
+            // is after the validity period start of the current terms
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
+        }
+        // No terms to accept
+        return true;
+    }
+
+    private boolean hasAcceptedCurrentServiceTerms(FtepService service) {
+        User user = ftepSecurityService.getCurrentUser();
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() != null && terms.getService().getId() == service.getId() && terms.isActive(currentTime)).findFirst();
         if (currentTerms.isPresent()) {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
