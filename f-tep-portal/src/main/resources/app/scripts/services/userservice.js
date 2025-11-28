@@ -323,14 +323,14 @@ define(['../ftepmodules', 'traversonHal'], function (ftepmodules, TraversonJsonH
             var deferred = $q.defer();
             halAPI.from(ftepProperties.URLv2 + '/users/current/checkTermsAccepted')
                 .newRequest()
-                .getResource()
+                .get()
                 .result
                 .then(
             function (document) {
                 if (200 <= document.status && document.status < 300) {
                     deferred.resolve(document);
                 } else {
-                    MessageService.addError('Unable to get current user\'s terms acceptance');
+                    MessageService.addError('Terms have not been accepted');
                     deferred.reject();
                 }
 			}, function (error) {

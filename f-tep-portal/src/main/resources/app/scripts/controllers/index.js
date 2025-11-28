@@ -87,8 +87,10 @@ define(['../ftepmodules'], function (ftepmodules) {
         $scope.checkTermsAccepted = function() {
 			UserService.checkTermsAccepted().then(
 				function() {
+					console.log('Terms are accepted')
 					$scope.termsAccepted = true;
 				}, function(error) {
+					console.log('Terms are not accepted')
 					$scope.termsAccepted = false;
 			});
         }
