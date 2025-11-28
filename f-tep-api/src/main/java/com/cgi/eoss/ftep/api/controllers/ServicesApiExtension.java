@@ -289,7 +289,7 @@ public class ServicesApiExtension {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
             return ftepTermsAcceptanceDataService.findByOwner(user).stream()
-                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.getId());
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
         }
         // No terms to accept
         return true;

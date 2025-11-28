@@ -145,7 +145,7 @@ public class UsersApiExtension {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
             return ftepTermsAcceptanceDataService.findByOwner(user).stream()
-                    .anyMatch(acceptance -> acceptance.terms.getId() == currentTerms.getId());
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
         }
         // No terms to accept
         return true;
@@ -163,7 +163,7 @@ public class UsersApiExtension {
     @PostMapping("/current/acceptTerms")
     @Transactional
     public ResponseEntity<Void> acceptTerms() {
-        if (!hasAcceptedCurrentTerms(service)) {
+        if (!hasAcceptedCurrentTerms()) {
             User currentUser = ftepSecurityService.getCurrentUser();
             LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
             // Get current terms
