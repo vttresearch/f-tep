@@ -262,11 +262,13 @@ public class JobConfigsApiExtension {
         User user = ftepSecurityService.getCurrentUser();
         LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
         // Get current terms
-        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream().filter(terms -> terms.isActive(currentTime)).findFirst();
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
         if (currentTerms.isPresent()) {
             // Check that the user has accepted these terms, i.e. acceptance
             // is after the validity period start of the current terms
-            return ftepTermsAcceptanceDataService.findByOwner(user).stream().anyMatch(acceptance -> acceptance.isAcceptedAfter(currentTerms.get().getValidStart()));
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
         }
         // No terms to accept
         return true;

@@ -1,11 +1,13 @@
 CREATE TABLE ftep_terms (
     id                      BIGSERIAL PRIMARY KEY,
-    version                 CHARACTER VARYING(255) NOT NULL UNIQUE,
+    version                 CHARACTER VARYING(255) NOT NULL,
     url                     CHARACTER VARYING(255) NOT NULL,
     service                 BIGINT REFERENCES ftep_services (id),
     valid_start             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     valid_end               TIMESTAMP WITHOUT TIME ZONE
 );
+
+ALTER TABLE ftep_terms ADD CONSTRAINT uq_ftep_terms UNIQUE(version,service);
 
 CREATE TABLE ftep_terms_acceptance (
     id                      BIGSERIAL PRIMARY KEY,
