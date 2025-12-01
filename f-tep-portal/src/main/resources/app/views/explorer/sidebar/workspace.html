@@ -139,6 +139,19 @@
                         </div>
                     </div>
 
+                    <div class="service-terms" ng-if="serviceTermsUrl != null">
+						<a href="{{serviceTermsUrl}}" target="_blank">Service terms</a>
+						<div class="service-terms" ng-if="serviceTermsAccepted">
+						Terms have been accepted.
+						</div>
+						<div class="service-terms" ng-if="!serviceTermsAccepted">
+						Please accept the service terms before continuing
+							<md-button  id="accept-service-terms-button" ng-click="acceptServiceTerms()">
+								Accept
+							</md-button>
+						</div>
+                    </div>
+
                     <md-button id="launch-button"
                                class="icon-button md-icon-button md-fab md-mini btn-success"
                                form="serviceForm"

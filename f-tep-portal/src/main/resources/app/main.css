@@ -2935,6 +2935,15 @@ pre {
   font-family: 'Ubuntu', sans-serif;
   margin: 0.8rem;
 }
+#accept-service-terms-button {
+  color: white;
+  background-color: #357711;
+  font-size: 0.75rem;
+  padding: 0.5rem 4rem;
+  text-transform: uppercase;
+  font-family: 'Ubuntu', sans-serif;
+  margin: 0.8rem;
+}
 
 
 /*! normalize.css v5.0.0 | MIT License | github.com/necolas/normalize.css */
