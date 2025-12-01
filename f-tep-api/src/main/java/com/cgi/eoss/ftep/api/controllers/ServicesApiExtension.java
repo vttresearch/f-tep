@@ -294,6 +294,21 @@ public class ServicesApiExtension {
         // No terms to accept
         return true;
     }
+
+    @GetMapping("/{serviceId}/getTerms")
+    public ResponseEntity<FtepTerms> getTerms(@ModelAttribute("serviceId") FtepService service) {
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() != null && terms.getService().getId() == service.getId() && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            FtepTerms terms = currentTerms.get();
+            // To prevent all service data in the output
+            terms.setService(null);
+            return new ResponseEntity<>(terms, HttpStatus.OK);
+        }
+        return ResponseEntity.notFound().build();
+    }
     
     @GetMapping("/{serviceId}/checkTermsAccepted")
     public ResponseEntity<Void> checkTermsAccepted(@ModelAttribute("serviceId") FtepService service) {
