@@ -80,7 +80,9 @@
                 <p>Please accept the <a href="https://f-tep.com/terms/" target="_blank">Forestry TEP Terms and Conditions</a> 
 					to start using the platform.
                 </p>
-                <md-button  id="accept-terms-button" ng-click="acceptTerms()">
+				<input name="acceptCB" id="acceptCB" type="checkbox" ng-model="acceptCB" />
+				<label for="acceptCB">I have read the terms</label><br>
+                <md-button  id="accept-terms-button" ng-click="acceptTerms()" ng-if="acceptCB">
                     Accept
                 </md-button>
                 <p>Have questions? <a href="https://f-tep.com/contact/" target="_blank">Contact us</a>!

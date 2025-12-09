@@ -17,6 +17,7 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         $scope.inputValidityMap = new Map();
         $scope.launchButtonTooltipText = "Launch";
 
+		$scope.serviceAcceptCB = false;
         $scope.serviceTermsUrl = null;
 		$scope.serviceTermsAccepted = false;
 

@@ -16,6 +16,7 @@ define(['../ftepmodules'], function (ftepmodules) {
         $scope.subscribed = false;
         $scope.termsAccepted = false;
         $scope.activeUser = {};
+		$scope.acceptCB = false;
 
         $scope.$on('no.user', function() {
             $scope.sessionEnded = true;
