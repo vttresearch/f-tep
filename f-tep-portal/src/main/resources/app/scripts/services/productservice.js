@@ -325,6 +325,69 @@ define(['../ftepmodules', 'traversonHal', '../vendor/handlebars/handlebars'], fu
             return deferred.promise;
         };
 
+        this.getServiceTerms = function (service) {
+            var deferred = $q.defer();
+            halAPI.from(rootUri + '/services/' + service.id + '/getTerms')
+                .newRequest()
+                .getResource()
+                .result
+                .then(
+                    function (document) {
+						deferred.resolve(document);
+                    }, function (error) {
+						// Object.keys(error) = [ "name", "url", "httpStatus", "body", "result" ]
+						if (error.httpStatus != 404) {
+							// 404 response is ok: there are no service specific terms
+							MessageService.addError('Could not get terms for Service ' + service.name, error);
+						}
+                        deferred.reject();
+                    });
+            return deferred.promise;
+        };
+
+        this.checkServiceTermsAccepted = function(service) {
+            var deferred = $q.defer();
+            halAPI.from(rootUri + '/services/' + service.id + '/checkTermsAccepted')
+                .newRequest()
+                .get()
+                .result
+                .then(
+            function (document) {
+				// Object.keys(document) = [ "data", "status", "headers", "config", "statusText", "body", "statusCode" ]
+                if (200 <= document.status && document.status < 300) {
+                    deferred.resolve(document);
+                } else {
+                    MessageService.addError('Service terms have not been accepted');
+                    deferred.reject();
+                }
+			}, function (error) {
+                MessageService.addError('Unable to get current user\'s service terms acceptance', error);
+                deferred.reject();
+            });
+            return deferred.promise;
+        };
+
+        this.acceptServiceTerms = function(service) {
+            var deferred = $q.defer();
+            halAPI.from(rootUri + '/services/' + service.id + '/acceptTerms')
+                     .newRequest()
+                     .post()
+                     .result
+                     .then(
+            function(document) {
+                if (200 <= document.status && document.status < 300) {
+                    deferred.resolve(document);
+                } else {
+                    MessageService.addError('Something went wrong in accepting service terms');
+                    deferred.reject();
+                }
+            }, function(error) {
+                MessageService.addError('Unable to accept service terms', error);
+                deferred.reject();
+            });
+            return deferred.promise;
+        };
+		
         this.createService = function (name, description, title) {
             return $q(function (resolve, reject) {
                 var service = {

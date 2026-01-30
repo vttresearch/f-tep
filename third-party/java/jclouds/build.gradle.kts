@@ -13,12 +13,13 @@ dependencies {
     api("org.apache.jclouds.driver:jclouds-sshj")
 
     // force the specific versions of jclouds dependencies
-    implementation("com.google.inject:guice:3.0")
-    implementation("com.google.code.gson:gson:2.5")
-    implementation("com.google.errorprone:error_prone_annotations:2.1.0")
-    implementation("com.google.guava:guava:18.0")
-    implementation("com.squareup.okhttp:okhttp:2.2.0")
-    implementation("javax.ws.rs:javax.ws.rs-api:2.0.1")
+    implementation("com.google.inject:guice:7.0.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.errorprone:error_prone_annotations:2.18.0")
+    implementation("com.google.guava:guava:32.0.0-jre")
+    implementation("com.squareup.okhttp3:okhttp:3.14.9")
+    implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.0.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
 }
 
 configurations.compile {

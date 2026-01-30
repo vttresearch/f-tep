@@ -17,6 +17,10 @@ define(['../../../ftepmodules'], function (ftepmodules) {
         $scope.inputValidityMap = new Map();
         $scope.launchButtonTooltipText = "Launch";
 
+		$scope.serviceAcceptCB = false;
+        $scope.serviceTermsUrl = null;
+		$scope.serviceTermsAccepted = false;
+
         $scope.searchForm = {
             config: {},
             api: {},
@@ -136,6 +140,15 @@ define(['../../../ftepmodules'], function (ftepmodules) {
 					systematicPossible: systematicPossible
                 };
             });
+			$scope.serviceTermsUrl = null;
+            ProductService.getServiceTerms(config.service).then(function(serviceTerms){
+				$scope.serviceTermsUrl = serviceTerms.url;
+            });
+			$scope.serviceTermsAccepted = false;
+            ProductService.checkServiceTermsAccepted(config.service).then(function(){
+				$scope.serviceTermsAccepted = true;
+            });
+			
             // Reset input validation data
             $scope.inputsValid = true;
             $scope.inputValidityMap = new Map();
@@ -144,6 +157,12 @@ define(['../../../ftepmodules'], function (ftepmodules) {
 			$scope.serviceParams.runMode = $scope.runModes.STANDARD.id;
 			delete $scope.serviceParams.systematicParameter;
         });
+
+		$scope.acceptServiceTerms = function() {
+			ProductService.acceptServiceTerms($scope.serviceParams.selectedService).then(function(){
+				$scope.serviceTermsAccepted = true;
+			});
+		}
 
         $scope.onRunModeChange = function() {
             if ($scope.serviceParams.runMode === $scope.runModes.SYSTEMATIC.id) {

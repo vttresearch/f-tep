@@ -1,5 +1,7 @@
 package com.cgi.eoss.ftep.api.controllers;
 
+import com.cgi.eoss.ftep.model.FtepService;
+import com.cgi.eoss.ftep.model.FtepTerms;
 import com.cgi.eoss.ftep.model.Job;
 import com.cgi.eoss.ftep.model.JobConfig;
 import com.cgi.eoss.ftep.model.Subscription;
@@ -10,6 +12,8 @@ import com.cgi.eoss.ftep.persistence.dao.JobConfigDao;
 import com.cgi.eoss.ftep.persistence.dao.JobDao;
 import com.cgi.eoss.ftep.persistence.dao.SystematicProcessingDao;
 import com.cgi.eoss.ftep.persistence.service.SubscriptionDataService;
+import com.cgi.eoss.ftep.persistence.service.FtepTermsDataService;
+import com.cgi.eoss.ftep.persistence.service.FtepTermsAcceptanceDataService;
 import com.cgi.eoss.ftep.rpc.FtepServiceParams;
 import com.cgi.eoss.ftep.rpc.JobParam;
 import com.cgi.eoss.ftep.rpc.LocalServiceLauncher;
@@ -63,15 +67,26 @@ public class JobConfigsApiExtension {
     private final JobConfigDao jobConfigDao;
     private final SystematicProcessingDao systematicProcessingDao;
     private final SubscriptionDataService subscriptionDataService;
+    private final FtepTermsDataService ftepTermsDataService;
+    private final FtepTermsAcceptanceDataService ftepTermsAcceptanceDataService;
 
     @Autowired
-    public JobConfigsApiExtension(FtepSecurityService ftepSecurityService, LocalServiceLauncher localServiceLauncher, JobDao jobRepository, JobConfigDao jobConfigDao, SystematicProcessingDao systematicProcessingDao, SubscriptionDataService subscriptionDataService) {
+    public JobConfigsApiExtension(FtepSecurityService ftepSecurityService, 
+            LocalServiceLauncher localServiceLauncher, 
+            JobDao jobRepository, 
+            JobConfigDao jobConfigDao, 
+            SystematicProcessingDao systematicProcessingDao, 
+            SubscriptionDataService subscriptionDataService,
+            FtepTermsDataService ftepTermsDataService,
+            FtepTermsAcceptanceDataService ftepTermsAcceptanceDataService) {
         this.ftepSecurityService = ftepSecurityService;
         this.localServiceLauncher = localServiceLauncher;
         this.jobRepository = jobRepository;
         this.jobConfigDao = jobConfigDao;
         this.systematicProcessingDao = systematicProcessingDao;
         this.subscriptionDataService = subscriptionDataService;
+        this.ftepTermsDataService = ftepTermsDataService;
+        this.ftepTermsAcceptanceDataService = ftepTermsAcceptanceDataService;
     }
 
     /**
@@ -84,6 +99,12 @@ public class JobConfigsApiExtension {
     @PreAuthorize("hasAnyRole('CONTENT_AUTHORITY', 'ADMIN') or hasPermission(#jobConfig, 'read') and hasPermission(#jobConfig.service, 'launch')")
     public ResponseEntity launch(@ModelAttribute("jobConfigId") JobConfig jobConfig) throws InterruptedException {
         User currentUser = ftepSecurityService.getCurrentUser();
+        if (!hasAcceptedCurrentTerms()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("F-TEP Terms and Conditions have not been accepted.");
+        }
+        if (!hasAcceptedCurrentServiceTerms(jobConfig.getService())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service Terms and Conditions have not been accepted.");
+        }
         try {
             if (exceedsQuotas(currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
@@ -139,6 +160,12 @@ public class JobConfigsApiExtension {
         LOG.debug("Received new request for systematic processing");
 
         User currentUser = ftepSecurityService.getCurrentUser();
+        if (!hasAcceptedCurrentTerms()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("F-TEP Terms and Conditions have not been accepted.");
+        }
+        if (!hasAcceptedCurrentServiceTerms(jobConfigTemplate.getService())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service Terms and Conditions have not been accepted.");
+        }
         try {
             if (exceedsQuotas(currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Processing or storage quota exceeded.");
@@ -239,5 +266,37 @@ public class JobConfigsApiExtension {
     }
 
     private class NoActiveSubscriptionException extends Exception {
+    }
+
+    private boolean hasAcceptedCurrentTerms() {
+        User user = ftepSecurityService.getCurrentUser();
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            // Check that the user has accepted these terms, i.e. acceptance
+            // is after the validity period start of the current terms
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
+        }
+        // No terms to accept
+        return true;
+    }
+
+    private boolean hasAcceptedCurrentServiceTerms(FtepService service) {
+        User user = ftepSecurityService.getCurrentUser();
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() != null && terms.getService().getId() == service.getId() && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            // Check that the user has accepted these terms, i.e. acceptance
+            // is after the validity period start of the current terms
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
+        }
+        // No terms to accept
+        return true;
     }
 }

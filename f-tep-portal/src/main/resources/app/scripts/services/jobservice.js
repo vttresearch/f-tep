@@ -411,6 +411,7 @@ define(['../ftepmodules', 'traversonHal'], function (ftepmodules, TraversonJsonH
                     .then(
             function (document) {
                 if (document.status == 403) {
+                    MessageService.addError('Failed to start job', 'Failed to start ' + service.name + ' job: ' + document.body);
                     deferred.reject(document);
                 } else {
                     launchedJobID = JSON.parse(document.data).id;
