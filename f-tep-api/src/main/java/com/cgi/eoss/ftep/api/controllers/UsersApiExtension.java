@@ -4,9 +4,13 @@ import com.cgi.eoss.ftep.model.Role;
 import com.cgi.eoss.ftep.model.Subscription;
 import com.cgi.eoss.ftep.model.User;
 import com.cgi.eoss.ftep.model.Wallet;
+import com.cgi.eoss.ftep.model.FtepTerms;
+import com.cgi.eoss.ftep.model.FtepTermsAcceptance;
 import com.cgi.eoss.ftep.persistence.service.GroupDataService;
 import com.cgi.eoss.ftep.persistence.service.SubscriptionDataService;
 import com.cgi.eoss.ftep.persistence.service.UserDataService;
+import com.cgi.eoss.ftep.persistence.service.FtepTermsDataService;
+import com.cgi.eoss.ftep.persistence.service.FtepTermsAcceptanceDataService;
 import com.cgi.eoss.ftep.security.FtepSecurityService;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +52,8 @@ public class UsersApiExtension {
     private final UserDataService userDataService;
     private final GroupDataService groupDataService;
     private final SubscriptionDataService subscriptionDataService;
+    private final FtepTermsDataService ftepTermsDataService;
+    private final FtepTermsAcceptanceDataService ftepTermsAcceptanceDataService;
 
     @Value("${ftep.api.trial-group-name:}")
     private String trialGroupName;
@@ -129,4 +135,46 @@ public class UsersApiExtension {
         return subscriptionDataService.findByOwner(user).stream().findAny().isPresent();
     }
 
+    private boolean hasAcceptedCurrentTerms() {
+        User user = ftepSecurityService.getCurrentUser();
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            // Check that the user has accepted these terms, i.e. acceptance
+            // is after the validity period start of the current terms
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
+        }
+        // No terms to accept
+        return true;
+    }
+
+    @GetMapping("/current/checkTermsAccepted")
+    public ResponseEntity<Void> checkTermsAccepted() {
+        if (hasAcceptedCurrentTerms()) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/current/acceptTerms")
+    @Transactional
+    public ResponseEntity<Void> acceptTerms() {
+        if (!hasAcceptedCurrentTerms()) {
+            User currentUser = ftepSecurityService.getCurrentUser();
+            LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+            // Get current terms
+            Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                    .filter(terms -> terms.getService() == null && terms.isActive(currentTime)).findFirst();
+            // There should always be terms if we get this far 
+            if (currentTerms.isPresent()) {
+                FtepTermsAcceptance acceptance = new FtepTermsAcceptance(currentUser, currentTerms.get(), currentTime);
+                ftepTermsAcceptanceDataService.save(acceptance);
+            }
+        }
+        return ResponseEntity.accepted().build();
+    }
 }

@@ -70,6 +70,29 @@
             </div>
         </div>
 
+        <div id="terms-layer" ng-show="!sessionEnded && !termsAccepted" ng-cloak>
+            <div id="terms-missing">
+                <a ng-href="{{ftepUrl}}" target="_blank">
+                    <img id="ftep-logo" src="images/logo.png"  alt="Forestry TEP Logo">
+                </a>
+                <h1>Welcome to Forestry TEP!
+                </h1>
+                <p>Please accept the <a href="https://f-tep.com/terms/" target="_blank">Forestry TEP Terms and Conditions</a> 
+					to start using the platform.
+                </p>
+				<input name="acceptCB" id="acceptCB" type="checkbox" ng-model="acceptCB" />
+				<label for="acceptCB">I have read the terms</label><br>
+                <md-button  id="accept-terms-button" ng-click="acceptTerms()" ng-if="acceptCB">
+                    Accept
+                </md-button>
+                <p>Have questions? <a href="https://f-tep.com/contact/" target="_blank">Contact us</a>!
+                </p>
+                <a ng-href="https://www.vttresearch.com/" target="_blank">
+                    <img id="vtt-logo" src="images/VTT_Orange_Logo.png" alt="VTT Logo">
+                </a>
+            </div>
+        </div>
+
         <!-- Google Analytics -->
          <script>
            !function(A,n,g,u,l,a,r){A.GoogleAnalyticsObject=l,A[l]=A[l]||function(){

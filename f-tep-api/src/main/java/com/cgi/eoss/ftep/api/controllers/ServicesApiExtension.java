@@ -4,6 +4,11 @@ import com.cgi.eoss.ftep.model.FtepService;
 import com.cgi.eoss.ftep.model.FtepServiceContextFile;
 import com.cgi.eoss.ftep.model.FtepServiceDockerBuildInfo;
 import com.cgi.eoss.ftep.model.FtepServiceDockerBuildInfo.Status;
+import com.cgi.eoss.ftep.model.FtepTerms;
+import com.cgi.eoss.ftep.model.FtepTermsAcceptance;
+import com.cgi.eoss.ftep.model.User;
+import com.cgi.eoss.ftep.persistence.service.FtepTermsAcceptanceDataService;
+import com.cgi.eoss.ftep.persistence.service.FtepTermsDataService;
 import com.cgi.eoss.ftep.persistence.service.ServiceDataService;
 import com.cgi.eoss.ftep.rpc.BuildServiceParams;
 import com.cgi.eoss.ftep.rpc.BuildServiceResponse;
@@ -34,12 +39,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
@@ -57,6 +66,8 @@ public class ServicesApiExtension {
     private final ServiceDataService serviceDataService;
     private final FtepSecurityService ftepSecurityService;
     private final LocalServiceLauncher localServiceLauncher;
+    private final FtepTermsDataService ftepTermsDataService;
+    private final FtepTermsAcceptanceDataService ftepTermsAcceptanceDataService;
 
     @GetMapping("/defaults")
     public Resources<FtepService> getDefaultServices() {
@@ -267,4 +278,62 @@ public class ServicesApiExtension {
     }
 
     // DOCKER BUILD SERVICE FINGERPRINT - END ------------------------------------- //
+
+    private boolean hasAcceptedCurrentTerms(FtepService service) {
+        User user = ftepSecurityService.getCurrentUser();
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() != null && terms.getService().getId() == service.getId() && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            // Check that the user has accepted these terms, i.e. acceptance
+            // is after the validity period start of the current terms
+            return ftepTermsAcceptanceDataService.findByOwner(user).stream()
+                    .anyMatch(acceptance -> acceptance.getTerms().getId() == currentTerms.get().getId());
+        }
+        // No terms to accept
+        return true;
+    }
+
+    @GetMapping("/{serviceId}/getTerms")
+    public ResponseEntity<FtepTerms> getTerms(@ModelAttribute("serviceId") FtepService service) {
+        LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+        // Get current terms
+        Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                .filter(terms -> terms.getService() != null && terms.getService().getId() == service.getId() && terms.isActive(currentTime)).findFirst();
+        if (currentTerms.isPresent()) {
+            FtepTerms terms = currentTerms.get();
+            // To prevent all service data in the output
+            terms.setService(null);
+            return new ResponseEntity<>(terms, HttpStatus.OK);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    @GetMapping("/{serviceId}/checkTermsAccepted")
+    public ResponseEntity<Void> checkTermsAccepted(@ModelAttribute("serviceId") FtepService service) {
+        if (hasAcceptedCurrentTerms(service)) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{serviceId}/acceptTerms")
+    @Transactional
+    public ResponseEntity<Void> acceptTerms(@ModelAttribute("serviceId") FtepService service) {
+        if (!hasAcceptedCurrentTerms(service)) {
+            User currentUser = ftepSecurityService.getCurrentUser();
+            LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
+            // Get current terms
+            Optional<FtepTerms> currentTerms = ftepTermsDataService.getAll().stream()
+                    .filter(terms -> terms.getService() != null && terms.getService().getId() == service.getId() && terms.isActive(currentTime)).findFirst();
+            // There should always be terms if we get this far 
+            if (currentTerms.isPresent()) {
+                FtepTermsAcceptance acceptance = new FtepTermsAcceptance(currentUser, currentTerms.get(), currentTime);
+                ftepTermsAcceptanceDataService.save(acceptance);
+            }
+        }
+        return ResponseEntity.accepted().build();
+    }
 }

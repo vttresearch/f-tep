@@ -139,6 +139,22 @@
                         </div>
                     </div>
 
+                    <div class="service-terms" ng-if="serviceTermsUrl != null">
+						<a href="{{serviceTermsUrl}}" target="_blank">Service terms</a>
+						<div ng-if="serviceTermsAccepted">
+						Terms have been accepted.
+						</div>
+						<div ng-if="!serviceTermsAccepted">
+							Please accept the service terms before continuing
+							<p>
+							<input name="serviceAcceptCB" id="serviceAcceptCB" type="checkbox" ng-model="serviceAcceptCB" />
+							<label for="serviceAcceptCB">I have read the terms</label><br>
+							<md-button  id="accept-service-terms-button" ng-click="acceptServiceTerms()" ng-if="serviceAcceptCB">
+								Accept
+							</md-button>
+						</div>
+                    </div>
+
                     <md-button id="launch-button"
                                class="icon-button md-icon-button md-fab md-mini btn-success"
                                form="serviceForm"

@@ -319,6 +319,48 @@ define(['../ftepmodules', 'traversonHal'], function (ftepmodules, TraversonJsonH
             return deferred.promise;
         };
 
+        this.checkTermsAccepted = function() {
+            var deferred = $q.defer();
+            halAPI.from(ftepProperties.URLv2 + '/users/current/checkTermsAccepted')
+                .newRequest()
+                .get()
+                .result
+                .then(
+            function (document) {
+                if (200 <= document.status && document.status < 300) {
+                    deferred.resolve(document);
+                } else {
+                    MessageService.addError('Terms have not been accepted');
+                    deferred.reject();
+                }
+			}, function (error) {
+                MessageService.addError('Unable to get current user\'s terms acceptance', error);
+                deferred.reject();
+            });
+            return deferred.promise;
+        };
+
+        this.acceptTerms = function() {
+            var deferred = $q.defer();
+            halAPI.from(ftepProperties.URLv2 + '/users/current/acceptTerms')
+                     .newRequest()
+                     .post()
+                     .result
+                     .then(
+            function(document) {
+                if (200 <= document.status && document.status < 300) {
+                    deferred.resolve(document);
+                } else {
+                    MessageService.addError('Something went wrong in accepting terms');
+                    deferred.reject();
+                }
+            }, function(error) {
+                MessageService.addError('Unable to accept terms', error);
+                deferred.reject();
+            });
+            return deferred.promise;
+        };
+
         return this;
     }]);
 });
